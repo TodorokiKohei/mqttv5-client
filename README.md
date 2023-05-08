@@ -1,3 +1,6 @@
+# 元のリポジトリ
+https://github.com/eclipse/paho.mqtt.java
+
 # Eclipse Paho Java Client
 [![Build Status](https://travis-ci.org/eclipse/paho.mqtt.java.svg?branch=develop)](https://travis-ci.org/eclipse/paho.mqtt.java)
 

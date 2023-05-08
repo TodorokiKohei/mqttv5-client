@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="org.eclipse.paho.client.mqttv3.repository" />
+        <module name="org.eclipse.paho.client.mqttv3" />
+        <module name="org.eclipse.paho.mqttv5.client.repository" />
+        <module name="org.eclipse.paho.mqttv5.client" />
+      </profile>
+      <profile name="Annotation profile for Eclipse Paho" enabled="true">
+        <sourceOutputDir name="../generated-sources/annotations" />
+        <sourceTestOutputDir name="../generated-test-sources/test-annotations" />
+        <module name="org.eclipse.paho.client.mqttv3.test" />
+      </profile>
+    </annotationProcessing>
+  </component>
+</project>

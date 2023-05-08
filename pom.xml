@@ -127,7 +127,7 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>3.2.0</version>
                     <configuration>
-                        <javadocExecutable>/usr/bin/javadoc</javadocExecutable>
+                        <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
                         <source>8</source>
                     </configuration>
                 </plugin>
@@ -363,4 +363,3 @@
         <module>org.eclipse.paho.mqttv5.client.repository</module>
     </modules>
 </project>
-
