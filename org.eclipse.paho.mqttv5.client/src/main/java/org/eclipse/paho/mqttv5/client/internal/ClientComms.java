@@ -326,6 +326,7 @@ public class ClientComms {
 				 * conOptions.getUserName(), conOptions.getPassword(),
 				 * conOptions.getWillMessage(), conOptions.getWillDestination()
 				 */
+				/* 最初のKeepAliveはここで設定される */
 				this.mqttConnection.setKeepAliveSeconds(conOptions.getKeepAliveInterval());
 				this.clientState.setCleanStart(conOptions.isCleanStart());
 

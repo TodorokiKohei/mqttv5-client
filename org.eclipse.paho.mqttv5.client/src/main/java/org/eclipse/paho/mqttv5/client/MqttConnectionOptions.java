@@ -119,6 +119,27 @@ public class MqttConnectionOptions {
 	// Client Operation Parameters
 	private int executorServiceTimeout = 1; // How long to wait in seconds when terminating the executor service.
 
+	// 拡張PINGREQの有効化フラグ
+	private boolean enableExPingReq = false;
+
+	/**
+	 * 拡張したPINGREQを有効にするかを確認する
+	 *
+	 * @return 拡張したPINGREQが有効化のフラグ
+	 */
+	public boolean isEnableExPingReq() {
+		return enableExPingReq;
+	}
+
+	/**
+	 * 拡張したPINGREQを有効にするかを設定する
+	 *
+	 * @param enableExPingReq 拡張したPINGREQを有効にするかを設定する
+	 */
+	public void setEnableExPingReq(boolean enableExPingReq) {
+		this.enableExPingReq = enableExPingReq;
+	}
+
 	/**
 	 * Returns the MQTT version.
 	 * 
