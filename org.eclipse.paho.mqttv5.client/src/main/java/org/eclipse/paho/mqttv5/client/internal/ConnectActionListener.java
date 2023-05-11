@@ -127,9 +127,17 @@ public class ConnectActionListener implements MqttActionListener {
 					myToken.getResponseProperties().isSubscriptionIdentifiersAvailable());
 			mqttConnection.setSharedSubscriptionsAvailable(myToken.getResponseProperties().isSharedSubscriptionAvailable());
 
-			// If provided, set the server keep alive value.
+			// ここでServerKeepAliveに更新される
 			if(myToken.getResponseProperties().getServerKeepAlive() != null) {
-				mqttConnection.setKeepAliveSeconds(myToken.getResponseProperties().getServerKeepAlive());
+				// 拡張PINGREQを有効にしない場合はKeepAliveを更新
+				// ServerKeepAliveが現在のKeepAliveより小さい場合はセッションの切断を回避するために更新
+				if (!mqttConnection.isEnableExPingReq()) {
+					System.out.println("Update KeepAlive:"+myToken.getResponseProperties().getServerKeepAlive());
+					mqttConnection.setKeepAliveSeconds(myToken.getResponseProperties().getServerKeepAlive());
+				}
+				else if (mqttConnection.getKeepAlive() >= myToken.getResponseProperties().getServerKeepAlive()) {
+					mqttConnection.setKeepAliveSeconds(myToken.getResponseProperties().getServerKeepAlive());
+				}
 			}
 
 			// If we are assigning the client ID post connect, then we need to re-initialise

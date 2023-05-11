@@ -38,7 +38,26 @@ public class MqttConnectionState {
 	private Boolean sharedSubscriptionsAvailable = true;
 	private boolean sendReasonMessages = false;
 	private long keepAlive = 60;
-        private String clientId = "";
+	private String clientId = "";
+
+	private boolean enableExPingReq = false;
+	/**
+	 * 拡張したPINGREQを有効にするかを確認する
+	 *
+	 * @return 拡張したPINGREQが有効化のフラグ
+	 */
+	public boolean isEnableExPingReq() {
+		return enableExPingReq;
+	}
+
+	/**
+	 * 拡張したPINGREQを有効にするかを設定する
+	 *
+	 * @param enableExPingReq 拡張したPINGREQを有効にするかを設定する
+	 */
+	public void setEnableExPingReq(boolean enableExPingReq) {
+		this.enableExPingReq = enableExPingReq;
+	}
 
 	// ******* Counters ******//
 	private AtomicInteger nextOutgoingTopicAlias = new AtomicInteger(1);
@@ -181,5 +200,4 @@ public class MqttConnectionState {
 	}
 
 
-	
 }
