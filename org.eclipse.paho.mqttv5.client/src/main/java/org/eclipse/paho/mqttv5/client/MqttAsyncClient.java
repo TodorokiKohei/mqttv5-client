@@ -779,6 +779,9 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 
 		this.mqttConnection.setIncomingTopicAliasMax(this.connOpts.getTopicAliasMaximum());
 
+		//
+		this.mqttConnection.setEnableExPingReq(connOpts.isEnableExPingReq());
+
 		comms.setNetworkModuleIndex(0);
 		connectActionListener.connect();
 
