@@ -21,9 +21,15 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 public class MqttPingReq extends MqttWireMessage{
 
 	public static final String KEY = "Ping";
+	private byte[] payload;
 	
 	public MqttPingReq(){
 		super(MqttWireMessage.MESSAGE_TYPE_PINGREQ);
+	}
+
+	public MqttPingReq(byte[] payload) {
+		super(MqttWireMessage.MESSAGE_TYPE_PINGREQ);
+		this.payload = payload;
 	}
 	
 	/**
@@ -48,5 +54,11 @@ public class MqttPingReq extends MqttWireMessage{
 	@Override
 	public String getKey() {
 		return KEY;
+	}
+
+	@Override
+	public byte[] getPayload(){
+		if (this.payload == null) return new byte[] {};
+		return this.payload;
 	}
 }
