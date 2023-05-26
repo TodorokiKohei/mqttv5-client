@@ -22,7 +22,7 @@ public class MqttPingReq extends MqttWireMessage{
 
 	public static final String KEY = "Ping";
 	private byte[] payload;
-	
+
 	public MqttPingReq(){
 		super(MqttWireMessage.MESSAGE_TYPE_PINGREQ);
 	}
@@ -31,7 +31,7 @@ public class MqttPingReq extends MqttWireMessage{
 		super(MqttWireMessage.MESSAGE_TYPE_PINGREQ);
 		this.payload = payload;
 	}
-	
+
 	/**
 	 * Returns <code>false</code> as message IDs are not required for MQTT
 	 * PINGREQ messages.
