@@ -761,7 +761,8 @@ public class ClientState implements MqttState {
 						if (pingCallback != null) {
 							token.setActionCallback(pingCallback);
 						}
-						this.pingCommand = new MqttPingReq("{\"canSend\":true}".getBytes());
+//						this.pingCommand = new MqttPingReq("{\"canSend\":true}".getBytes());
+
 						tokenStore.saveToken(token, pingCommand);
 						pendingFlows.insertElementAt(pingCommand, 0);
 

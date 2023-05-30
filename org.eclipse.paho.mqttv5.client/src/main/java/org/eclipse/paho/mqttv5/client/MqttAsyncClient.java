@@ -44,14 +44,7 @@ import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.MqttPersistenceException;
 import org.eclipse.paho.mqttv5.common.MqttSecurityException;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
-import org.eclipse.paho.mqttv5.common.packet.MqttAuth;
-import org.eclipse.paho.mqttv5.common.packet.MqttDataTypes;
-import org.eclipse.paho.mqttv5.common.packet.MqttDisconnect;
-import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
-import org.eclipse.paho.mqttv5.common.packet.MqttPublish;
-import org.eclipse.paho.mqttv5.common.packet.MqttReturnCode;
-import org.eclipse.paho.mqttv5.common.packet.MqttSubscribe;
-import org.eclipse.paho.mqttv5.common.packet.MqttUnsubscribe;
+import org.eclipse.paho.mqttv5.common.packet.*;
 import org.eclipse.paho.mqttv5.common.util.MqttTopicValidator;
 
 /**
@@ -1813,4 +1806,10 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 		return null;
 	}
 
+	public IMqttToken setPingReqPayload(byte[] payload) throws MqttException {
+		MqttToken token = new MqttToken(getClientId());
+		MqttPingReq ping = new MqttPingReq(payload);
+		comms.sendNoWait(ping, token);
+		return  token;
+	}
 }
