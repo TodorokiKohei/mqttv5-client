@@ -4,7 +4,6 @@ import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
-import org.eclipse.paho.mqttv5.common.MqttPersistenceException;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
 import java.io.BufferedWriter;
@@ -13,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -27,7 +27,7 @@ public class ShareSample {
 
     public static void main(String[] args) {
         new ShareSample(
-                5000, 1, 3, "tcp://localhost:1883", 2, 1, "t", 100
+                12000, 1, 3, "tcp://localhost:1883", 2, 1, "t", 100
         ).run();
     }
 
@@ -52,7 +52,8 @@ public class ShareSample {
             try {
                 SubBG sub = new SubBG(config, "sub-" + Integer.valueOf(i).toString(), latch);
                 subList.add(sub);
-                sub.start();
+                sub.connect();
+                sub.setPingReqPayload("{\"canSend\":true}");
             } catch (MqttException e) {
                 throw new RuntimeException(e);
             }
@@ -63,19 +64,26 @@ public class ShareSample {
             try {
                 PubBG pub = new PubBG(config, "pub-" + Integer.valueOf(i).toString(), latch);
                 pubList.add(pub);
-                pub.start();
+                pub.connect();
             } catch (MqttException e) {
                 throw new RuntimeException(e);
             }
         }
 
         try {
+            long startTime = Instant.now().toEpochMilli();
+            for (SubBG sub : subList) sub.start(startTime);
+            for (PubBG pub : pubList) pub.start();
             System.out.println("Wait: " + execTime + " [msec]");
-            Thread.sleep(execTime);
+            Thread.sleep(execTime / 2);
+            subList.get(0).setPingReqPayload("{\"canSend\":false}");
+            Thread.sleep(execTime / 2);
             pubList.forEach(c -> c.setRunning(false));
             subList.forEach(c -> c.setRunning(false));
             latch.await();
         } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (MqttException e) {
             throw new RuntimeException(e);
         }
 
@@ -103,7 +111,7 @@ public class ShareSample {
             this.clientId = clientId;
         }
 
-        public void start() throws MqttException {
+        public void connect() throws MqttException {
             MemoryPersistence persistence = new MemoryPersistence();
             client = new MqttAsyncClient(config.serverURI, clientId, persistence);
             setCallback();
@@ -114,8 +122,6 @@ public class ShareSample {
             IMqttToken mt = client.connect(conOpts);
             mt.waitForCompletion();
             System.out.println(this.clientId + " is connected");
-
-            setRunning(true);
         }
 
         public void setRunning(boolean running) {
@@ -143,14 +149,14 @@ public class ShareSample {
         public void setCallback() {
         }
 
-        @Override
+
         public void start() throws MqttException {
-            super.start();
             new Thread(this).start();
         }
 
         @Override
         public void run() {
+            setRunning(true);
             int msgId = 0;
             while (isRunning()) {
                 try {
@@ -176,6 +182,7 @@ public class ShareSample {
 
         private CountDownLatch latch;
         private List<String> results;
+        private long startTime;
 
         public SubBG(CommonConfig config, String clientId, CountDownLatch latch) {
             super(config, clientId);
@@ -188,15 +195,16 @@ public class ShareSample {
             client.setCallback(this);
         }
 
-        @Override
-        public void start() throws MqttException {
-            super.start();
+
+        public void start(long startTime) throws MqttException {
+            this.startTime = startTime;
             client.subscribe("$share/g/" + config.topic, config.qos);
             new Thread(this).start();
         }
 
         @Override
         public void run() {
+            setRunning(true);
             while (isRunning()) {
                 try {
                     Thread.sleep(100);
@@ -223,32 +231,36 @@ public class ShareSample {
 
         @Override
         public void disconnected(MqttDisconnectResponse disconnectResponse) {
-
         }
 
         @Override
         public void mqttErrorOccurred(MqttException exception) {
-
         }
 
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
-            results.add(new String(message.getPayload()));
+            long diff = Instant.now().toEpochMilli() - startTime;
+            results.add(diff + "," + new String(message.getPayload()));
         }
 
         @Override
         public void deliveryComplete(IMqttToken token) {
-
         }
 
         @Override
         public void connectComplete(boolean reconnect, String serverURI) {
-
         }
 
         @Override
         public void authPacketArrived(int reasonCode, MqttProperties properties) {
+        }
 
+        public void setPingReqPayload(String payload) {
+            try {
+                client.setPingReqPayload(payload.getBytes());
+            } catch (MqttException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }
