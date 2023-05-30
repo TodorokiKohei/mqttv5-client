@@ -13,6 +13,8 @@ local.properties
 *.log
 org.eclipse.paho.client.mqttv3.test/TakeOverClient-*
 
+results
+
 # External tool builders
 .externalToolBuilders/
 

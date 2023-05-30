@@ -27,7 +27,7 @@ public class ShareSample {
 
     public static void main(String[] args) {
         new ShareSample(
-                5000, 1, 2, "tcp://localhost:1883", 2, 1, "t", 100
+                5000, 1, 3, "tcp://localhost:1883", 2, 1, "t", 100
         ).run();
     }
 
@@ -159,11 +159,7 @@ public class ShareSample {
                     client.publish(config.topic, msg);
                     msgId++;
                     Thread.sleep(config.publishInterval);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                } catch (MqttPersistenceException e) {
-                    throw new RuntimeException(e);
-                } catch (MqttException e) {
+                } catch (InterruptedException | MqttException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -214,7 +210,7 @@ public class ShareSample {
                 throw new RuntimeException(e);
             }
             try (BufferedWriter bw =
-                         Files.newBufferedWriter(Paths.get(clientId + ".csv"), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                         Files.newBufferedWriter(Paths.get("results/" + clientId + ".csv"), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
                 for (String res : results) {
                     bw.write(res);
                     bw.newLine();
