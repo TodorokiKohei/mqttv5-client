@@ -21,14 +21,30 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 public class MqttPingReq extends MqttWireMessage{
 
 	public static final String KEY = "Ping";
+
+	private static final Byte[] validProperties = {MqttProperties.USER_DEFINED_PAIR_IDENTIFIER};
+	private MqttProperties properties;
+
 	private byte[] payload;
 
 	public MqttPingReq(){
-		super(MqttWireMessage.MESSAGE_TYPE_PINGREQ);
+		this(null, null);
 	}
 
+
 	public MqttPingReq(byte[] payload) {
+		this(payload, null);
+	}
+
+	public MqttPingReq(byte[] payload, MqttProperties properties) {
 		super(MqttWireMessage.MESSAGE_TYPE_PINGREQ);
+		if (properties != null) {
+			this.properties = properties;
+		} else {
+			// [MQTT-2.2.2-1] プロパティのサイズは必ず含まなければならない
+			this.properties = new MqttProperties();
+		}
+		this.properties.setValidProperties(validProperties);
 		this.payload = payload;
 	}
 
@@ -43,7 +59,7 @@ public class MqttPingReq extends MqttWireMessage{
 
 	@Override
 	protected byte[] getVariableHeader() throws MqttException {
-		return new byte[0];
+		return this.properties.encodeProperties();
 	}
 	
 	@Override
