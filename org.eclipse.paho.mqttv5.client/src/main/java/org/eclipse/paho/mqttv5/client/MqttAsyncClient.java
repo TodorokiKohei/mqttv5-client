@@ -1805,11 +1805,4 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 		comms.sendNoWait(auth, token);
 		return null;
 	}
-
-	public IMqttToken setPingReqPayload(byte[] payload) throws MqttException {
-		MqttToken token = new MqttToken(getClientId());
-		MqttPingReq ping = new MqttPingReq(payload);
-		comms.sendNoWait(ping, token);
-		return  token;
-	}
 }
