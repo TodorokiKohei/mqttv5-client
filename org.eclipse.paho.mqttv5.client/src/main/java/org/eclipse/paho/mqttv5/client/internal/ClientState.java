@@ -775,10 +775,6 @@ public class ClientState implements MqttState {
 					log.fine(CLASS_NAME, methodName, "620", new Object[] { Long.valueOf(keepAlive),
 							Long.valueOf(lastOutboundActivity), Long.valueOf(lastInboundActivity) });
 
-					if (mqttConnection.isEnableExPingReq()) {
-						log.info(CLASS_NAME, methodName, "send PINGREQ");
-					}
-
 					// pingOutstanding++; // it will be set after the ping has been written on the
 					// wire
 					// lastPing = time; // it will be set after the ping has been written on the

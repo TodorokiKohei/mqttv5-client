@@ -4,10 +4,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class is used as a store for client information that should be preserved
- * for a single connection. 
+ * for a single connection.
  * Properties returned in subsequent connect packets will override existing properties
  * here as well.
- *
+ * <p>
  * Connection variables that this class holds:
  *
  * <ul>
@@ -41,6 +41,7 @@ public class MqttConnectionState {
 	private String clientId = "";
 
 	private boolean enableExPingReq = false;
+
 	/**
 	 * 拡張したPINGREQを有効にするかを確認する
 	 *
@@ -62,13 +63,13 @@ public class MqttConnectionState {
 	// ******* Counters ******//
 	private AtomicInteger nextOutgoingTopicAlias = new AtomicInteger(1);
 
-        public MqttConnectionState(String clientId) {
-            this.clientId = clientId;
-        }
+	public MqttConnectionState(String clientId) {
+		this.clientId = clientId;
+	}
 
-        public String getClientId() {
-                return clientId;
-        }
+	public String getClientId() {
+		return clientId;
+	}
 
 	/**
 	 * Clears the session and resets. This would be called when the connection has
@@ -86,8 +87,8 @@ public class MqttConnectionState {
 	}
 
 	public void setReceiveMaximum(Integer receiveMaximum) {
-                if (receiveMaximum != null)
-		    this.receiveMaximum = receiveMaximum;
+		if (receiveMaximum != null)
+			this.receiveMaximum = receiveMaximum;
 	}
 
 	public Integer getMaximumQoS() {
@@ -95,8 +96,8 @@ public class MqttConnectionState {
 	}
 
 	public void setMaximumQoS(Integer maximumQoS) {
-                if (maximumQoS != null)  
-		    this.maximumQoS = maximumQoS;
+		if (maximumQoS != null)
+			this.maximumQoS = maximumQoS;
 	}
 
 	public Boolean isRetainAvailable() {
@@ -104,8 +105,8 @@ public class MqttConnectionState {
 	}
 
 	public void setRetainAvailable(Boolean retainAvailable) {
-                if (retainAvailable != null)
-		    this.retainAvailable = retainAvailable;
+		if (retainAvailable != null)
+			this.retainAvailable = retainAvailable;
 	}
 
 	public Long getOutgoingMaximumPacketSize() {
@@ -113,18 +114,18 @@ public class MqttConnectionState {
 	}
 
 	public void setOutgoingMaximumPacketSize(Long maximumPacketSize) {
-                if (maximumPacketSize != null)
-		    this.outgoingMaximumPacketSize = maximumPacketSize;
+		if (maximumPacketSize != null)
+			this.outgoingMaximumPacketSize = maximumPacketSize;
 	}
-	
+
 	public Long getIncomingMaximumPacketSize() {
 		return incomingMaximumPacketSize;
 	}
 
 
 	public void setIncomingMaximumPacketSize(Long incomingMaximumPacketSize) {
-                if (incomingMaximumPacketSize != null) 
-		    this.incomingMaximumPacketSize = incomingMaximumPacketSize;
+		if (incomingMaximumPacketSize != null)
+			this.incomingMaximumPacketSize = incomingMaximumPacketSize;
 	}
 
 
@@ -133,8 +134,8 @@ public class MqttConnectionState {
 	}
 
 	public void setOutgoingTopicAliasMaximum(Integer topicAliasMaximum) {
-                if (topicAliasMaximum != null)
-		    this.outgoingTopicAliasMaximum = topicAliasMaximum;
+		if (topicAliasMaximum != null)
+			this.outgoingTopicAliasMaximum = topicAliasMaximum;
 	}
 
 	public Boolean isWildcardSubscriptionsAvailable() {
@@ -142,8 +143,8 @@ public class MqttConnectionState {
 	}
 
 	public void setWildcardSubscriptionsAvailable(Boolean wildcardSubscriptionsAvailable) {
-                if (wildcardSubscriptionsAvailable != null)
-		    this.wildcardSubscriptionsAvailable = wildcardSubscriptionsAvailable;
+		if (wildcardSubscriptionsAvailable != null)
+			this.wildcardSubscriptionsAvailable = wildcardSubscriptionsAvailable;
 	}
 
 	public Boolean isSubscriptionIdentifiersAvailable() {
@@ -151,8 +152,8 @@ public class MqttConnectionState {
 	}
 
 	public void setSubscriptionIdentifiersAvailable(Boolean subscriptionIdentifiersAvailable) {
-                if (subscriptionIdentifiersAvailable != null)
-		    this.subscriptionIdentifiersAvailable = subscriptionIdentifiersAvailable;
+		if (subscriptionIdentifiersAvailable != null)
+			this.subscriptionIdentifiersAvailable = subscriptionIdentifiersAvailable;
 	}
 
 	public Boolean isSharedSubscriptionsAvailable() {
@@ -160,10 +161,10 @@ public class MqttConnectionState {
 	}
 
 	public void setSharedSubscriptionsAvailable(Boolean sharedSubscriptionsAvailable) {
-                if (sharedSubscriptionsAvailable != null)
-		    this.sharedSubscriptionsAvailable = sharedSubscriptionsAvailable;
+		if (sharedSubscriptionsAvailable != null)
+			this.sharedSubscriptionsAvailable = sharedSubscriptionsAvailable;
 	}
-	
+
 	public Integer getNextOutgoingTopicAlias() {
 		return nextOutgoingTopicAlias.getAndIncrement();
 	}
@@ -175,8 +176,8 @@ public class MqttConnectionState {
 
 
 	public void setIncomingTopicAliasMax(Integer incomingTopicAliasMax) {
-                if (incomingTopicAliasMax != null)
-		    this.incomingTopicAliasMax = incomingTopicAliasMax;
+		if (incomingTopicAliasMax != null)
+			this.incomingTopicAliasMax = incomingTopicAliasMax;
 	}
 
 

@@ -47,12 +47,6 @@ public abstract class ExtendedPingSender implements MqttPingSender {
 		//@Trace 659=start timer for client:{0}
 		log.fine(CLASS_NAME, methodName, "659", new Object[]{clientid});
 
-		// Extended PINGREQ must be enabled.
-		if (!comms.getConOptions().isEnableExPingReq()) {
-			throw new IllegalStateException("Extended PINGREQ is disabled.");
-		}
-		log.info(CLASS_NAME, methodName, "Extended PINGREQ is enabled");
-
 		long delay = getDelay(comms.getKeepAlive());
 		if (executorService == null) {
 			timer = new Timer("MQTT Ping: " + clientid);

@@ -19,7 +19,6 @@ public class Publisher {
         MemoryPersistence persistence = new MemoryPersistence();
 
         MqttConnectionOptions conOpts = new MqttConnectionOptions();
-        conOpts.setEnableExPingReq(true);
         conOpts.setKeepAliveInterval(2);
 
 

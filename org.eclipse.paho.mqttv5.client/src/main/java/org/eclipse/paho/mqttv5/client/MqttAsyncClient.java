@@ -561,7 +561,7 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 			clientId = "";
 		}
 
-	        mqttConnection = new MqttConnectionState(clientId);
+		mqttConnection = new MqttConnectionState(clientId);
 
 		NetworkModuleService.validateURI(serverURI);
 
@@ -578,6 +578,12 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 		this.pingSender = pingSender;
 		if (this.pingSender == null) {
 			this.pingSender = new TimerPingSender(this.executorService);
+		}
+
+		// If Extended PingSender is used, set enableExPingReq in MqttConnectionState to true.
+		if (pingSender instanceof ExtendedPingSender) {
+			mqttConnection.setEnableExPingReq(true);
+			log.info(CLASS_NAME, methodName, "Extended PINGREQ is enabled.");
 		}
 
 		// @TRACE 101=<init> ClientID={0} ServerURI={1} PersistenceType={2}
@@ -771,9 +777,6 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 		this.mqttConnection.clearConnectionState();
 
 		this.mqttConnection.setIncomingTopicAliasMax(this.connOpts.getTopicAliasMaximum());
-
-		//
-		this.mqttConnection.setEnableExPingReq(connOpts.isEnableExPingReq());
 
 		comms.setNetworkModuleIndex(0);
 		connectActionListener.connect();
