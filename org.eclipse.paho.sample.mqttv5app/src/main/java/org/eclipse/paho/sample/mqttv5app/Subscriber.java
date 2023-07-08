@@ -18,13 +18,14 @@ public class Subscriber implements MqttCallback {
         MemoryPersistence persistence = new MemoryPersistence();
 
         MqttConnectionOptions conOpts = new MqttConnectionOptions();
-        conOpts.setEnableExPingReq(true);
         conOpts.setKeepAliveInterval(2);
 
+        ExtendedPingSender pingSender = new SamplePingSender("Hello World!!");
+        pingSender.setPingIntervalMilliSeconds(1000);
 
         MqttAsyncClient client = null;
         try {
-            client = new MqttAsyncClient(url, clientId, persistence);
+            client = new MqttAsyncClient(url, clientId, persistence, pingSender, null);
             Subscriber sub = new Subscriber();
             client.setCallback(sub);
 

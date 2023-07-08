@@ -117,7 +117,6 @@ public class ShareSample {
             setCallback();
 
             MqttConnectionOptions conOpts = new MqttConnectionOptions();
-            conOpts.setEnableExPingReq(true);
             conOpts.setKeepAliveInterval(config.keepAlive);
             IMqttToken mt = client.connect(conOpts);
             mt.waitForCompletion();
@@ -256,11 +255,7 @@ public class ShareSample {
         }
 
         public void setPingReqPayload(String payload) {
-            try {
-                client.setPingReqPayload(payload.getBytes());
-            } catch (MqttException e) {
-                throw new RuntimeException(e);
-            }
+
         }
     }
 }
