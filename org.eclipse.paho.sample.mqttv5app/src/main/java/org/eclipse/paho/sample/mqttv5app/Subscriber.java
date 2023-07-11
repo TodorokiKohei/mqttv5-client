@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class Subscriber implements MqttCallback {
+    static private StatusPingSender pingSender;
+
     public static void main(String[] args) {
 
         String url = "tcp://localhost:1883";
@@ -20,12 +22,15 @@ public class Subscriber implements MqttCallback {
         MqttConnectionOptions conOpts = new MqttConnectionOptions();
         conOpts.setKeepAliveInterval(2);
 
-        ExtendedPingSender pingSender = new SamplePingSender("Hello World!!");
+//        ExtendedPingSender pingSender = new SamplePingSender("Hello World!!");
+        pingSender = new StatusPingSender(100);
         pingSender.setPingIntervalMilliSeconds(1000);
 
         MqttAsyncClient client = null;
         try {
             client = new MqttAsyncClient(url, clientId, persistence, pingSender, null);
+            client.resizeReceiverQueueSize(100);
+
             Subscriber sub = new Subscriber();
             client.setCallback(sub);
 
@@ -62,7 +67,11 @@ public class Subscriber implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        System.out.println("Message Arrived");
+        long startTime = System.currentTimeMillis();
+        Thread.sleep(800);
+        long processingTime = System.currentTimeMillis() - startTime;
+        pingSender.updateProcessingTimePerMsg(processingTime / 1000.0);
+
     }
 
     @Override
