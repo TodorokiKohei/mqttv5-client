@@ -1808,4 +1808,8 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 		comms.sendNoWait(auth, token);
 		return null;
 	}
+
+	public void resizeReceiverQueueSize(int size){
+		comms.resizeReceiverQueueSize(size);
+	}
 }

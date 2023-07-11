@@ -29,12 +29,12 @@ public class Publisher {
             mt.waitForCompletion();
             System.out.println("Connected");
 
-            Thread.sleep(1000);
-            for (int i = 0; i < 10; i++) {
+            Thread.sleep(5000);
+            for (int i = 0; i < 20; i++) {
                 MqttMessage ms = new MqttMessage("Hello World".getBytes());
                 ms.setQos(1);
                 client.publish("t", ms);
-                Thread.sleep(1000);
+                Thread.sleep(500);
             }
 
             System.out.println("Wait: please enter");
