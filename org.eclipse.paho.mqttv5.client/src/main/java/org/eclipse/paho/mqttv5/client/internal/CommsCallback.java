@@ -53,7 +53,7 @@ public class CommsCallback implements Runnable {
 	private static final String CLASS_NAME = CommsCallback.class.getName();
 	private Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
 
-	private static final int INBOUND_QUEUE_SIZE = 10;
+	private static int inboundQueueSize = 10;
 	private MqttCallback mqttCallback;
 	private MqttCallback reconnectInternalCallback;
 	private HashMap<Integer, IMqttMessageListener> callbackMap; // Map of message handler callbacks to internal IDs
@@ -81,8 +81,8 @@ public class CommsCallback implements Runnable {
 
 	CommsCallback(ClientComms clientComms) {
 		this.clientComms = clientComms;
-		this.messageQueue = new ArrayList<>(INBOUND_QUEUE_SIZE);
-		this.completeQueue = new ArrayList<>(INBOUND_QUEUE_SIZE);
+		this.messageQueue = new ArrayList<>(inboundQueueSize);
+		this.completeQueue = new ArrayList<>(inboundQueueSize);
 		this.callbackMap = new HashMap<>();
 		this.callbackTopicMap = new HashMap<>();
 		this.subscriptionIdMap = new HashMap<>();
@@ -380,7 +380,7 @@ public class CommsCallback implements Runnable {
 			// the client protect itself from getting flooded by messages
 			// from the server.
 			synchronized (spaceAvailable) {
-				while (isRunning() && !isQuiescing() && messageQueue.size() >= INBOUND_QUEUE_SIZE) {
+				while (isRunning() && !isQuiescing() && messageQueue.size() >= inboundQueueSize) {
 					try {
 						// @TRACE 709=wait for spaceAvailable
 						log.fine(CLASS_NAME, methodName, "709");
@@ -665,6 +665,18 @@ public class CommsCallback implements Runnable {
 			result = (current_state == State.QUIESCING);
 		}
 		return result;
+	}
+
+	public void resizeQueueSize(int size) {
+		if (isRunning()) {
+			throw new IllegalStateException("It cannot be resized after startup.");
+		}
+		inboundQueueSize = size;
+		messageQueue.ensureCapacity(size);
+	}
+
+	public int getNumberOfMsgsInQueue(){
+		return messageQueue.size();
 	}
 	
 }
