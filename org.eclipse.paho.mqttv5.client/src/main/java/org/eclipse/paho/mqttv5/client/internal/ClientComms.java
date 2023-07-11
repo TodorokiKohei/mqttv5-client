@@ -973,9 +973,13 @@ public class ClientComms {
 
 	public boolean doesSubscriptionIdentifierExist(int subscriptionIdentifier) {
 		return this.callback.doesSubscriptionIdentifierExist(subscriptionIdentifier);
+	}
 
 	public void resizeReceiverQueueSize(int size){
 		callback.resizeQueueSize(size);
 	}
 
+	public int getNumberOfMsgsUnprocessed(){
+		return callback.getNumberOfMsgsInQueue();
+	}
 }

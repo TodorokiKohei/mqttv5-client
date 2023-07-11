@@ -675,7 +675,7 @@ public class CommsCallback implements Runnable {
 		messageQueue.ensureCapacity(size);
 	}
 
-	public int getNumberOfMsgsInQueue(){
+	public int getNumberOfMsgsInQueue() {
 		return messageQueue.size();
 	}
 	
