@@ -5,6 +5,7 @@ import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
+import org.eclipse.paho.sample.mqttv5app.pingsender.StatusPingSender;
 
 import java.io.BufferedReader;
 import java.io.IOException;

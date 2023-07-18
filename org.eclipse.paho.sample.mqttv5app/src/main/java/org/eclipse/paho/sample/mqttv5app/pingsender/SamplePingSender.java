@@ -1,11 +1,10 @@
-package org.eclipse.paho.sample.mqttv5app;
+package org.eclipse.paho.sample.mqttv5app.pingsender;
 
 import org.eclipse.paho.mqttv5.client.ExtendedPingSender;
 import org.eclipse.paho.mqttv5.common.packet.MqttPingReq;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.eclipse.paho.mqttv5.common.packet.UserProperty;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class SamplePingSender extends ExtendedPingSender {

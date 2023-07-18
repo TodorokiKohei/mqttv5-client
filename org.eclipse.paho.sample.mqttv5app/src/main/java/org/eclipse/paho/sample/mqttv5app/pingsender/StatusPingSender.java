@@ -1,10 +1,8 @@
-package org.eclipse.paho.sample.mqttv5app;
+package org.eclipse.paho.sample.mqttv5app.pingsender;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.eclipse.paho.mqttv5.client.ExtendedPingSender;
-import org.eclipse.paho.mqttv5.client.logging.Logger;
-import org.eclipse.paho.mqttv5.client.logging.LoggerFactory;
 import org.eclipse.paho.mqttv5.common.packet.MqttPingReq;
 
 import java.util.ArrayList;
