@@ -93,13 +93,9 @@ public abstract class ExtendedPingSender implements MqttPingSender {
 			log.info(CLASS_NAME, methodName, "660", new Object[]{Long.valueOf(System.nanoTime())});
 
 			// Create PINGREQ before checkForActibity
-			try {
-				MqttPingReq pingReq = createPingreq();
-				MqttToken token = new MqttToken(clientid);
-				comms.sendNoWait(pingReq, token);    // update pingCommand of ClientState
-			} catch (MqttException e) {
-				throw new RuntimeException(e);
-			}
+			MqttPingReq pingReq = createPingreq();
+			comms.updatePingCommand(pingReq);    // update pingCommand of ClientState
+
 			comms.checkForActivity();
 		}
 	}
@@ -111,16 +107,12 @@ public abstract class ExtendedPingSender implements MqttPingSender {
 			String originalThreadName = Thread.currentThread().getName();
 			Thread.currentThread().setName("MQTT Ping: " + clientid);
 			//@Trace 660=Check schedule at {0}
-			log.info(CLASS_NAME, methodName, "660", new Object[]{Long.valueOf(System.nanoTime())});
+			log.fine(CLASS_NAME, methodName, "660", new Object[]{Long.valueOf(System.nanoTime())});
 
 			// Create PINGREQ before checkForActibity
-			try {
-				MqttPingReq pingReq = createPingreq();
-				MqttToken token = new MqttToken(clientid);
-				comms.sendNoWait(pingReq, token);    // update pingCommand of ClientState
-			} catch (MqttException e) {
-				throw new RuntimeException(e);
-			}
+			MqttPingReq pingReq = createPingreq();
+			comms.updatePingCommand(pingReq);    // update pingCommand of ClientState
+
 			comms.checkForActivity();
 			Thread.currentThread().setName(originalThreadName);
 		}

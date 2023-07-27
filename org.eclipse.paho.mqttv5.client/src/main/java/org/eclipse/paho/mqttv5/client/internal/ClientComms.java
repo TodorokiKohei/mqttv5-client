@@ -41,12 +41,7 @@ import org.eclipse.paho.mqttv5.client.logging.LoggerFactory;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.MqttPersistenceException;
-import org.eclipse.paho.mqttv5.common.packet.MqttConnAck;
-import org.eclipse.paho.mqttv5.common.packet.MqttConnect;
-import org.eclipse.paho.mqttv5.common.packet.MqttDisconnect;
-import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
-import org.eclipse.paho.mqttv5.common.packet.MqttPublish;
-import org.eclipse.paho.mqttv5.common.packet.MqttWireMessage;
+import org.eclipse.paho.mqttv5.common.packet.*;
 
 /**
  * Handles client communications with the server. Sends and receives MQTT V5
@@ -981,5 +976,9 @@ public class ClientComms {
 
 	public int getNumberOfMsgsUnprocessed(){
 		return callback.getNumberOfMsgsInQueue();
+	}
+
+	public void updatePingCommand(MqttPingReq pingCommand) {
+		this.clientState.setPingCommand(pingCommand);
 	}
 }
