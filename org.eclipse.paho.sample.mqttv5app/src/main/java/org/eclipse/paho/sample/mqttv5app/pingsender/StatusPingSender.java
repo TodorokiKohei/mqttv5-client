@@ -5,48 +5,40 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.eclipse.paho.mqttv5.client.ExtendedPingSender;
 import org.eclipse.paho.mqttv5.common.packet.MqttPingReq;
 
-import java.util.ArrayList;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class StatusPingSender extends ExtendedPingSender {
 	private static final String CLASS_NAME = StatusPingSender.class.getName();
 
-	private int bufferSize;
-	private ArrayList<Double> processingTimeBuffer;
-	private double processingTimePerMsg;
+	private int messageCount;
+	private double totalProcessingTime;
 
 	private ObjectMapper mapper;
 
-	public StatusPingSender(int bufferSize) {
-		this.bufferSize = bufferSize;
-		processingTimeBuffer = new ArrayList<>(bufferSize);
-		processingTimePerMsg = 0;
+	public StatusPingSender() {
+		messageCount = 0;
+		totalProcessingTime = 0;
 		mapper = new ObjectMapper();
 	}
 
 	public void updateProcessingTimePerMsg(double processingTime){
 		final String methodName = "updateProcessingTimePerMsg";
 
-		double totalProcessingTime = processingTimePerMsg * processingTimeBuffer.size();
-		if (processingTimeBuffer.size() == bufferSize) {
-			double element = processingTimeBuffer.remove(0);
-			totalProcessingTime -= element;
-			log.info(CLASS_NAME, methodName, "Buffer is full so removed first element({0}).", new Object[]{element});
-		}
+		messageCount++;
 		totalProcessingTime += processingTime;
-		processingTimeBuffer.add(new Double(processingTime));
-		log.info(CLASS_NAME, methodName, "Added {0} to the end of buffer.", new Object[]{processingTime});
-
-		processingTimePerMsg = totalProcessingTime / processingTimeBuffer.size();
 	}
 
 	@Override
 	protected MqttPingReq createPingreq() {
 		final String methodName = "cratePingreq";
 
-		Payload payload = new Payload(comms.getNumberOfMsgsUnprocessed(), processingTimePerMsg);
+		Payload payload;
+		if (messageCount == 0) {
+			payload = new Payload(comms.getNumberOfMsgsUnprocessed(), 0);
+		} else {
+			payload = new Payload(comms.getNumberOfMsgsUnprocessed(), totalProcessingTime/messageCount);
+		}
 		try {
 			String jsonPayload = mapper.writeValueAsString(payload);
 			MqttPingReq pingReq = new MqttPingReq(jsonPayload.getBytes());

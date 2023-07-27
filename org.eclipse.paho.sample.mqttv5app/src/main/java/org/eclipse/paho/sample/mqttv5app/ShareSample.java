@@ -1,11 +1,18 @@
 package org.eclipse.paho.sample.mqttv5app;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.cli.*;
 import org.eclipse.paho.mqttv5.client.*;
+import org.eclipse.paho.mqttv5.client.logging.Logger;
+import org.eclipse.paho.mqttv5.client.logging.LoggerFactory;
 import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
+import org.eclipse.paho.sample.mqttv5app.pingsender.StatusPingSender;
 
 
 import java.io.BufferedWriter;
@@ -17,15 +24,52 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.concurrent.CountDownLatch;
 
 public class ShareSample {
+	private static final String CLASS_NAME = ShareSample.class.getName();
+	protected Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
 
 	private int execTime;
 	private int pubNum;
 	private int subNum;
 
 	private CommonConfig config;
+
+	static class CommonConfig {
+		public String serverURI;
+		public int keepAlive;
+		public int qos;
+		public String topic;
+
+		public int publishInterval;
+		public int pingInterval;
+		public ArrayList<Integer> subProcessingTime;
+		public int messageSize;
+	}
+
+	static class Payload {
+		@JsonProperty("messageId")
+		public int messageId;
+
+		@JsonProperty("sendTime")
+		public long sendTime;
+
+		@JsonProperty("data")
+		public String data;
+
+		@JsonCreator
+		public Payload(
+				@JsonProperty("messageId") int messageId,
+				@JsonProperty("sendTime") long sendTime,
+				@JsonProperty("data") String data
+		){
+			this.messageId = messageId;
+			this.sendTime = sendTime;
+			this.data = data;
+		}
+	}
 
 	public static void main(String[] args) throws ParseException {
 		ShareSample ss = new ShareSample();
@@ -35,19 +79,32 @@ public class ShareSample {
 
 	public void setup(String[] args) throws ParseException {
 		Options options = new Options();
-		options.addOption("t", "time", true, "execution time[msec]");
+		options.addOption("t", "exec-time", true, "execution time[sec]");
 		options.addOption("p", "pub", true, "number of publisher");
 		options.addOption("s", "sub", true, "number of subscriber");
+
 		options.addOption("h", "host", true, "server URI");
 		options.addOption("", "topic", true, "topic");
 		options.addOption("k", "keep-alive", true, "keep alive");
 		options.addOption("q", "qos", true, "qos");
-		options.addOption("i", "interval", true, "time interval between publishing message");
+
+		options.addOption("i", "pub-interval", true, "time interval between publishing message");
+
+		options.addOption("", "ping-interval", true, "time interval between pingreq");
+		options.addOption(Option.builder("")
+				.longOpt("process-time")
+				.hasArgs()
+				.desc("subscriber processing time")
+				.valueSeparator(',')
+				.required()
+				.build());
+
+		options.addOption("", "size", true, "message size");
 
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = parser.parse(options, args);
 
-		this.execTime = Integer.parseInt(cmd.getOptionValue("t", "10000"));
+		this.execTime = Integer.parseInt(cmd.getOptionValue("t", "10")) * 1000;
 		this.pubNum = Integer.parseInt(cmd.getOptionValue("p", "1"));
 		this.subNum = Integer.parseInt(cmd.getOptionValue("s", "1"));
 
@@ -56,7 +113,18 @@ public class ShareSample {
 		config.topic = cmd.getOptionValue("topic", "t");
 		config.qos = Integer.parseInt(cmd.getOptionValue("qos", "0"));
 		config.keepAlive = Integer.parseInt(cmd.getOptionValue("keepAlive", "60"));
-		config.publishInterval = Integer.parseInt(cmd.getOptionValue("interval", "1000"));
+		config.publishInterval = Integer.parseInt(cmd.getOptionValue("pub-interval", "1000"));
+		config.pingInterval = Integer.parseInt(cmd.getOptionValue("ping-interval", "1000"));
+
+		String[] subProcessingTime = cmd.getOptionValues("process-time");
+		if (subProcessingTime.length != this.subNum) {
+			throw new ParseException("invalid subscriber processing time");
+		}
+		config.subProcessingTime = new ArrayList<>();
+		for (String s : subProcessingTime) {
+			config.subProcessingTime.add(Integer.parseInt(s));
+		}
+		config.messageSize = Integer.parseInt(cmd.getOptionValue("size", "100"));
 		this.config = config;
 	}
 
@@ -66,7 +134,13 @@ public class ShareSample {
 		ArrayList<SubBG> subList = new ArrayList<>();
 		for (int i = 0; i < subNum; i++) {
 			try {
-				SubBG sub = new SubBG(config, "sub-" + Integer.valueOf(i).toString(), latch);
+				StatusPingSender pingSender = new StatusPingSender();
+				pingSender.setPingIntervalMilliSeconds(config.pingInterval);
+				SubBG sub = new SubBG(config,
+						"sub-" + Integer.valueOf(i).toString(),
+						latch,
+						pingSender,
+						config.subProcessingTime.get(i));
 				subList.add(sub);
 				sub.connect();
 			} catch (MqttException e) {
@@ -77,7 +151,10 @@ public class ShareSample {
 		ArrayList<PubBG> pubList = new ArrayList<>();
 		for (int i = 0; i < pubNum; i++) {
 			try {
-				PubBG pub = new PubBG(config, "pub-" + Integer.valueOf(i).toString(), latch);
+				PubBG pub = new PubBG(config,
+						"pub-" + Integer.valueOf(i).toString(),
+						latch,
+						config.messageSize);
 				pubList.add(pub);
 				pub.connect();
 			} catch (MqttException e) {
@@ -89,9 +166,8 @@ public class ShareSample {
 			long startTime = Instant.now().toEpochMilli();
 			for (SubBG sub : subList) sub.start(startTime);
 			for (PubBG pub : pubList) pub.start();
-			System.out.println("Wait: " + execTime + " [msec]");
-			Thread.sleep(execTime / 2);
-			Thread.sleep(execTime / 2);
+			log.info(CLASS_NAME, "run", "Wait: " + execTime + " [msec]");
+			Thread.sleep(execTime);
 			pubList.forEach(c -> c.setRunning(false));
 			subList.forEach(c -> c.setRunning(false));
 			latch.await();
@@ -103,16 +179,10 @@ public class ShareSample {
 
 	}
 
-	static class CommonConfig {
-		public String serverURI;
-		public int keepAlive;
-		public int qos;
-		public String topic;
 
-		public int publishInterval;
-	}
 
 	abstract class clientBG {
+		private final String CLASS_NAME = clientBG.class.getName();
 
 		protected CommonConfig config;
 		protected String clientId;
@@ -120,12 +190,16 @@ public class ShareSample {
 		protected MqttAsyncClient client;
 		private boolean isRunning;
 
-		public clientBG(CommonConfig config, String clientId) throws MqttException {
+		protected ObjectMapper mapper;
+
+		public clientBG(CommonConfig config, String clientId, MqttPingSender pingSender) throws MqttException {
 			this.config = config;
 			this.clientId = clientId;
 
 			MemoryPersistence persistence = new MemoryPersistence();
-			client = new MqttAsyncClient(config.serverURI, clientId, persistence);
+			client = new MqttAsyncClient(config.serverURI, clientId, persistence, pingSender, null);
+
+			mapper = new ObjectMapper();
 		}
 
 		public void connect() throws MqttException {
@@ -133,7 +207,7 @@ public class ShareSample {
 			conOpts.setKeepAliveInterval(config.keepAlive);
 			IMqttToken mt = client.connect(conOpts);
 			mt.waitForCompletion();
-			System.out.println(this.clientId + " is connected");
+			log.info(CLASS_NAME, "connect",this.clientId + " is connected");
 		}
 
 		public void setRunning(boolean running) {
@@ -147,12 +221,15 @@ public class ShareSample {
 
 
 	class PubBG extends clientBG implements Runnable {
+		private final String CLASS_NAME = PubBG.class.getName();
 
 		private CountDownLatch latch;
+		private String data;
 
-		public PubBG(CommonConfig config, String clientId, CountDownLatch latch) throws MqttException {
-			super(config, clientId);
+		public PubBG(CommonConfig config, String clientId, CountDownLatch latch, int messageSize) throws MqttException {
+			super(config, clientId, null);
 			this.latch = latch;
+			this.data =  "X".repeat(messageSize);
 		}
 
 		public void start() throws MqttException {
@@ -163,14 +240,21 @@ public class ShareSample {
 		public void run() {
 			setRunning(true);
 			int msgId = 0;
+			try {
+				mapper.writeValueAsString(new Payload(0, 0, ""));
+			} catch (JsonProcessingException e) {}
 			while (isRunning()) {
 				try {
-					MqttMessage msg = new MqttMessage(("num:" + msgId).getBytes());
+					long sendTime = Instant.now().toEpochMilli();
+					Payload payload = new Payload(msgId, sendTime, data);
+					MqttMessage msg = new MqttMessage(mapper.writeValueAsString(payload).getBytes());
 					msg.setQos(config.qos);
 					client.publish(config.topic, msg);
 					msgId++;
 					Thread.sleep(config.publishInterval);
 				} catch (InterruptedException | MqttException e) {
+					throw new RuntimeException(e);
+				} catch (JsonProcessingException e) {
 					throw new RuntimeException(e);
 				}
 			}
@@ -184,19 +268,26 @@ public class ShareSample {
 	}
 
 	class SubBG extends clientBG implements Runnable, MqttCallback {
+		private final String CLASS_NAME = SubBG.class.getName();
 
 		private final CountDownLatch latch;
 		private final List<String> results;
 		private long startTime;
+		private final StatusPingSender pingSender;
+		private final int processingTime;
 
-		public SubBG(CommonConfig config, String clientId, CountDownLatch latch) throws MqttException {
-			super(config, clientId);
+		public SubBG(CommonConfig config, String clientId, CountDownLatch latch, StatusPingSender pingSender, int processingTime) throws MqttException {
+			super(config, clientId, pingSender);
 			this.latch = latch;
 			this.results = new ArrayList<String>();
+			this.pingSender = pingSender;
+			this.processingTime = processingTime;
+			this.client.resizeReceiverQueueSize(1000);
 			client.setCallback(this);
 		}
 
 		public void start(long startTime) throws MqttException {
+			log.info(CLASS_NAME, "start",clientId + ":" + processingTime + " [msec]");
 			this.startTime = startTime;
 			client.subscribe("$share/g/" + config.topic, config.qos);
 			new Thread(this).start();
@@ -218,7 +309,9 @@ public class ShareSample {
 				throw new RuntimeException(e);
 			}
 			try (BufferedWriter bw =
-						 Files.newBufferedWriter(Paths.get("results/" + clientId + ".csv"), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+						 Files.newBufferedWriter(Paths.get("results/" + startTime + "-" + clientId + ".csv"), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+				bw.write("clientId,messageId,sendTime,receivedTime,latency");
+				bw.newLine();
 				for (String res : results) {
 					bw.write(res);
 					bw.newLine();
@@ -239,8 +332,28 @@ public class ShareSample {
 
 		@Override
 		public void messageArrived(String topic, MqttMessage message) throws Exception {
-			long diff = Instant.now().toEpochMilli() - startTime;
-			results.add(diff + "," + new String(message.getPayload()));
+			String methodName = "messageArrived";
+
+			long receivedTime = Instant.now().toEpochMilli();
+			Payload payload;
+			try {
+				payload = mapper.readValue(message.getPayload(), Payload.class);
+			} catch (Exception e) {
+				log.warning(CLASS_NAME, methodName, e.getMessage());
+				throw e;
+			}
+			long latency = receivedTime -payload.sendTime;
+
+			StringJoiner sj = new StringJoiner(",");
+			sj.add(clientId);
+			sj.add(String.valueOf(payload.messageId));
+			sj.add(String.valueOf(payload.sendTime));
+			sj.add(String.valueOf(receivedTime));
+			sj.add(String.valueOf(latency));
+
+			results.add(sj.toString());
+			Thread.sleep(processingTime);
+			pingSender.updateProcessingTimePerMsg(Instant.now().toEpochMilli()-receivedTime);
 		}
 
 		@Override

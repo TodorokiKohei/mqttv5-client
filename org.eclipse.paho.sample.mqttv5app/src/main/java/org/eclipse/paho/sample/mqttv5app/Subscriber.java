@@ -24,7 +24,7 @@ public class Subscriber implements MqttCallback {
         conOpts.setKeepAliveInterval(2);
 
 //        ExtendedPingSender pingSender = new SamplePingSender("Hello World!!");
-        pingSender = new StatusPingSender(100);
+        pingSender = new StatusPingSender();
         pingSender.setPingIntervalMilliSeconds(1000);
 
         MqttAsyncClient client = null;
@@ -39,7 +39,7 @@ public class Subscriber implements MqttCallback {
             mt.waitForCompletion();
             System.out.println("Connected");
 
-            client.subscribe("t", 1);
+            client.subscribe("$share/g/t", 1);
             System.out.println("Subscribe");
 
             System.out.println("Wait: please enter");
