@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="unbalanced-processing-time" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="corretto-11" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <option name="MAIN_CLASS_NAME" value="org.eclipse.paho.sample.mqttv5app.ShareSample" />
+    <module name="org.eclipse.paho.sample.mqttv5app" />
+    <option name="PROGRAM_PARAMETERS" value="-t 10 -s 3 -i 20 --ping-interval 1000 --process-time 20,50,80" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
