@@ -19,9 +19,13 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -131,6 +135,7 @@ public class ShareSample {
 	public void run() {
 		CountDownLatch latch = new CountDownLatch(pubNum + subNum);
 
+		// create subscriber
 		ArrayList<SubBG> subList = new ArrayList<>();
 		for (int i = 0; i < subNum; i++) {
 			try {
@@ -148,6 +153,7 @@ public class ShareSample {
 			}
 		}
 
+		// create publisher
 		ArrayList<PubBG> pubList = new ArrayList<>();
 		for (int i = 0; i < pubNum; i++) {
 			try {
@@ -163,8 +169,12 @@ public class ShareSample {
 		}
 
 		try {
-			long startTime = Instant.now().toEpochMilli();
-			for (SubBG sub : subList) sub.start(startTime);
+			LocalDateTime ldt = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+			Path dirPath = Paths.get("results/" + ldt.format(dtf));
+			Files.createDirectory(dirPath);
+
+			for (SubBG sub : subList) sub.start(dirPath);
 			for (PubBG pub : pubList) pub.start();
 			log.info(CLASS_NAME, "run", "Wait: " + execTime + " [msec]");
 			Thread.sleep(execTime);
@@ -174,6 +184,8 @@ public class ShareSample {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		} catch (MqttException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 
@@ -272,7 +284,7 @@ public class ShareSample {
 
 		private final CountDownLatch latch;
 		private final List<String> results;
-		private long startTime;
+		private Path dirPath;
 		private final StatusPingSender pingSender;
 		private final int processingTime;
 
@@ -286,9 +298,9 @@ public class ShareSample {
 			client.setCallback(this);
 		}
 
-		public void start(long startTime) throws MqttException {
+		public void start(Path dirPath) throws MqttException {
 			log.info(CLASS_NAME, "start",clientId + ":" + processingTime + " [msec]");
-			this.startTime = startTime;
+			this.dirPath = dirPath;
 			client.subscribe("$share/g/" + config.topic, config.qos);
 			new Thread(this).start();
 		}
@@ -308,8 +320,10 @@ public class ShareSample {
 			} catch (MqttException e) {
 				throw new RuntimeException(e);
 			}
+
+			// write results
 			try (BufferedWriter bw =
-						 Files.newBufferedWriter(Paths.get("results/" + startTime + "-" + clientId + ".csv"), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+						 Files.newBufferedWriter(dirPath.resolve(clientId + ".csv"), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
 				bw.write("clientId,messageId,sendTime,receivedTime,latency");
 				bw.newLine();
 				for (String res : results) {
