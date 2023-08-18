@@ -3,6 +3,7 @@ package org.eclipse.paho.sample.mqttv5app.pingsender;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.eclipse.paho.mqttv5.client.ExtendedPingSender;
+import org.eclipse.paho.mqttv5.client.MqttPingSender;
 import org.eclipse.paho.mqttv5.common.packet.MqttPingReq;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,14 +40,17 @@ public class StatusPingSender extends ExtendedPingSender {
 		} else {
 			payload = new Payload(comms.getNumberOfMsgsUnprocessed(), totalProcessingTime/messageCount);
 		}
+		MqttPingReq pingReq;
 		try {
 			String jsonPayload = mapper.writeValueAsString(payload);
-			MqttPingReq pingReq = new MqttPingReq(jsonPayload.getBytes());
+			pingReq = new MqttPingReq(jsonPayload.getBytes());
 			log.info(CLASS_NAME, methodName, "Create PINGREQ payload: {0}.", new Object[]{jsonPayload});
-			return pingReq;
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
+		messageCount = 0;
+		totalProcessingTime = 0;
+		return pingReq;
 	}
 
 	class Payload {
