@@ -39,6 +39,8 @@ public class ShareSample {
 	private int pubNum;
 	private int subNum;
 
+	static ObjectMapper mapper = new ObjectMapper();
+
 	private CommonConfig config;
 
 	static class CommonConfig {
@@ -135,6 +137,13 @@ public class ShareSample {
 	public void run() {
 		CountDownLatch latch = new CountDownLatch(pubNum + subNum);
 
+		try {
+			mapper.readValue("{\"messageId\": 0, \"sendTime\":0, \"data\":\"data\"}", Payload.class);
+			mapper.writeValueAsString(new Payload(0, 0, ""));
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
+		}
+
 		// create subscriber
 		ArrayList<SubBG> subList = new ArrayList<>();
 		for (int i = 0; i < subNum; i++) {
@@ -172,7 +181,7 @@ public class ShareSample {
 			LocalDateTime ldt = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 			Path dirPath = Paths.get("results/" + ldt.format(dtf));
-			Files.createDirectory(dirPath);
+			Files.createDirectories(dirPath);
 
 			for (SubBG sub : subList) sub.start(dirPath);
 			for (PubBG pub : pubList) pub.start();
@@ -202,7 +211,7 @@ public class ShareSample {
 		protected MqttAsyncClient client;
 		private boolean isRunning;
 
-		protected ObjectMapper mapper;
+//		protected ObjectMapper mapper;
 
 		public clientBG(CommonConfig config, String clientId, MqttPingSender pingSender) throws MqttException {
 			this.config = config;
@@ -211,7 +220,7 @@ public class ShareSample {
 			MemoryPersistence persistence = new MemoryPersistence();
 			client = new MqttAsyncClient(config.serverURI, clientId, persistence, pingSender, null);
 
-			mapper = new ObjectMapper();
+//			mapper = new ObjectMapper();
 		}
 
 		public void connect() throws MqttException {
@@ -252,9 +261,6 @@ public class ShareSample {
 		public void run() {
 			setRunning(true);
 			int msgId = 0;
-			try {
-				mapper.writeValueAsString(new Payload(0, 0, ""));
-			} catch (JsonProcessingException e) {}
 			while (isRunning()) {
 				try {
 					long sendTime = Instant.now().toEpochMilli();
@@ -368,6 +374,7 @@ public class ShareSample {
 			results.add(sj.toString());
 			Thread.sleep(processingTime);
 			pingSender.updateProcessingTimePerMsg(Instant.now().toEpochMilli()-receivedTime);
+//			pingSender.updateProcessingTimePerMsg(processingTime);
 		}
 
 		@Override
