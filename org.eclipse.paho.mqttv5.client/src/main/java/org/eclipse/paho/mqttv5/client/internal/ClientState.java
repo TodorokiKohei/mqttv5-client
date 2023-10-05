@@ -1625,4 +1625,8 @@ public class ClientState implements MqttState {
 		props.put("tokens", tokenStore);
 		return props;
 	}
+
+	public void setPingCommand(MqttPingReq pingCommand){
+		this.pingCommand = pingCommand;
+	}
 }
