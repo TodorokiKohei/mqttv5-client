@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="org.eclipse.paho.sample.mqttv5app:jar">
-    <output-path>$PROJECT_DIR$/org.eclipse.paho.sample.mqttv5app/bin</output-path>
+    <output-path>$PROJECT_DIR$/product</output-path>
     <root id="archive" name="org.eclipse.paho.sample.mqttv5app.jar">
       <element id="directory" name="META-INF">
         <element id="file-copy" path="$PROJECT_DIR$/org.eclipse.paho.sample.mqttv5app/META-INF/MANIFEST.MF" />
