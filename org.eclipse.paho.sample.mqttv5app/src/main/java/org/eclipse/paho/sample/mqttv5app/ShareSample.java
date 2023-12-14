@@ -321,6 +321,14 @@ public class ShareSample {
 					throw new RuntimeException(e);
 				}
 			}
+
+			while (client.getNumberOfMsgsUnprocessed() != 0) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
+			}
 			try {
 				client.disconnect();
 			} catch (MqttException e) {

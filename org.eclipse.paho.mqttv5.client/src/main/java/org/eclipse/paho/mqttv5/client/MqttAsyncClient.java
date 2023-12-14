@@ -1812,4 +1812,8 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 	public void resizeReceiverQueueSize(int size){
 		comms.resizeReceiverQueueSize(size);
 	}
+
+	public int getNumberOfMsgsUnprocessed(){
+        return comms.getNumberOfMsgsUnprocessed();
+    }
 }
