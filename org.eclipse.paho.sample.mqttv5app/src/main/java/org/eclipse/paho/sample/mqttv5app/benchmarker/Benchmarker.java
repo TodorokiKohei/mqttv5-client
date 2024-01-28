@@ -9,6 +9,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang3.RandomStringUtils;
 import org.eclipse.paho.mqttv5.common.MqttException;
 
 import java.util.ArrayList;
@@ -19,7 +21,7 @@ public class Benchmarker {
 
 	public static final Logger logger = Logger.getLogger(Benchmarker.class.getName());
 
-	private UUID uuid;
+	private String randomId;
 	private BenchmarkOptions opts;
 	private List<Client> clients = new ArrayList<>();
 	private List<BufferedWriter> writers = new ArrayList<>();
@@ -30,12 +32,11 @@ public class Benchmarker {
 		opts.setEnvVar();
 
 		// Generate a unique ID for benchmark
-		UUID uuid = UUID.randomUUID();
-		new Benchmarker(uuid, opts).run();
+		new Benchmarker(RandomStringUtils.randomAscii(16), opts).run();
 	}
 
-	public Benchmarker(UUID uuid, BenchmarkOptions opts) {
-        this.uuid = uuid;
+	public Benchmarker(String randomId, BenchmarkOptions opts) {
+        this.randomId = randomId;
         this.opts = opts;
 
 		// Set up logging
@@ -50,7 +51,7 @@ public class Benchmarker {
 		}
 		else if (opts.mode.equals("PUB")) {
 			for (int i = 0; i < opts.numClients; i++) {
-				clients.add(new Publisher(opts, uuid.toString() + "-pub-"+ i));
+				clients.add(new Publisher(opts, randomId + "-pub-"+ i));
 			}
 		}else if (opts.mode.equals("SUB")) {
 			Path outputPath = Paths.get(opts.outputPath);
@@ -65,7 +66,7 @@ public class Benchmarker {
 				try {
 					BufferedWriter bw = Files.newBufferedWriter(outputPath.resolve("sub-"+i+".csv"), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 					writers.add(bw);
-					clients.add(new Subscriber(opts, uuid.toString()+"-sub-"+i, bw));
+					clients.add(new Subscriber(opts, randomId+"-sub-"+i, bw));
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
