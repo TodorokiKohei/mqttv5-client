@@ -80,6 +80,8 @@ public class Subscriber implements Client, Runnable,MqttCallback {
 
 		// 切断
 		if (client != null) {
+			IMqttToken mt = client.unsubscribe(opts.topic);
+			mt.waitForCompletion();
 			client.disconnect();
 		}
 		Benchmarker.logger.log(Level.INFO, "{0} stop subscribing", new Object[]{clientId});
