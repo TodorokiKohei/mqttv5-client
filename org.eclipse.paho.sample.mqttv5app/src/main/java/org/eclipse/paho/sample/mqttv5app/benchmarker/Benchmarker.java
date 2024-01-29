@@ -15,7 +15,6 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class Benchmarker {
 
@@ -32,7 +31,7 @@ public class Benchmarker {
 		opts.setEnvVar();
 
 		// Generate a unique ID for benchmark
-		new Benchmarker(RandomStringUtils.randomAscii(16), opts).run();
+		new Benchmarker(RandomStringUtils.randomAlphabetic(10), opts).run();
 	}
 
 	public Benchmarker(String randomId, BenchmarkOptions opts) {

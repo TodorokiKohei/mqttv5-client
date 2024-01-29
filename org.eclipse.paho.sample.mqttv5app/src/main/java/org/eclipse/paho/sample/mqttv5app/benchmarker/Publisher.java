@@ -55,9 +55,11 @@ public class Publisher implements Client, Runnable {
 		// 送信レートの設定の有無でスケジューラの設定を変える
 		service = Executors.newSingleThreadScheduledExecutor();
 		if (publishInterval > 0) {
+			// 定期的にタスクが実行されるようにスケジューラを設定
 			Benchmarker.logger.log(Level.INFO, "{0} start publishing with interval {1} micro seconds", new Object[]{clientId, publishInterval});
             future = service.scheduleAtFixedRate(this, 0, publishInterval, TimeUnit.MICROSECONDS);
         } else {
+			// 一度だけタスクが実行されるようにスケジューラを設定
 			Benchmarker.logger.log(Level.INFO, "{0} start publishing without interval",  new Object[]{clientId});
             future = service.schedule(this, 0, TimeUnit.SECONDS);
         }
@@ -83,20 +85,20 @@ public class Publisher implements Client, Runnable {
 
 	public void run(){
 		if (publishInterval > 0) {
-            intervalPublish();
+			publishOnce();
         } else {
-            continuingPublish();
+			publishConsecutively();
         }
 	}
 
-	private void continuingPublish(){
-		while(!isTerminate){
-			publish();
-		}
-    }
-
-	private void intervalPublish(){
+	private void publishOnce(){
 		if (!isTerminate) {
+			 publish();
+		}
+	}
+
+	private void publishConsecutively(){
+		while(!isTerminate){
 			publish();
 		}
 	}
@@ -106,7 +108,8 @@ public class Publisher implements Client, Runnable {
 		try {
 			MqttMessage msg = new MqttMessage(mapper.writeValueAsBytes(payload));
 			msg.setQos(opts.qos);
-			client.publish(opts.topic, msg);
+			IMqttToken mt = client.publish(opts.topic, msg);
+			mt.waitForCompletion();
 		} catch (JsonProcessingException | MqttException e) {
 			Benchmarker.logger.log(Level.SEVERE, clientId + " failed to publish message.", e);
 			throw new RuntimeException(e);
