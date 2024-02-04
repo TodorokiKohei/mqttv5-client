@@ -14,7 +14,7 @@ import java.time.Instant;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 
-public class Subscriber implements Client, Runnable,MqttCallback {
+public class Subscriber implements Client, Runnable, MqttCallback {
 
 	private BenchmarkOptions opts;
 	private String clientId;
@@ -30,19 +30,19 @@ public class Subscriber implements Client, Runnable,MqttCallback {
 
 	private volatile boolean isTerminate = false;
 
-	public Subscriber(BenchmarkOptions opts, String clientId, BufferedWriter bw){
-        this.opts = opts;
-        this.clientId = clientId;
+	public Subscriber(BenchmarkOptions opts, String clientId, BufferedWriter bw) {
+		this.opts = opts;
+		this.clientId = clientId;
 		this.bw = bw;
 
 		this.mapper = new ObjectMapper();
 	}
 
 	public String getClientId() {
-        return clientId;
-    }
+		return clientId;
+	}
 
-	public void start() throws MqttException{
+	public void start() throws MqttException {
 		// 接続
 		MemoryPersistence persistence = new MemoryPersistence();
 		if (opts.enableExtendedPingSender) {
@@ -66,7 +66,7 @@ public class Subscriber implements Client, Runnable,MqttCallback {
 		Benchmarker.logger.log(Level.INFO, "{0} start subscribing", new Object[]{clientId});
 	}
 
-	public void stop() throws MqttException, InterruptedException{
+	public void stop() throws MqttException, InterruptedException {
 		// スレッド停止
 		if (!future.isDone()) {
 			isTerminate = true;
@@ -87,15 +87,15 @@ public class Subscriber implements Client, Runnable,MqttCallback {
 		Benchmarker.logger.log(Level.INFO, "{0} stop subscribing", new Object[]{clientId});
 	}
 
-	public void run(){
+	public void run() {
 		try {
 			client.subscribe(opts.topic, opts.qos);
 
 			bw.write(Record.toCsvHeader());
 			bw.newLine();
-			while(true) {
+			while (true) {
 				Record record = queue.take();
-				if (record.isLast()){
+				if (record.isLast()) {
 					break;
 				}
 				bw.write(record.toCsvRow());
@@ -122,7 +122,7 @@ public class Subscriber implements Client, Runnable,MqttCallback {
 		long receiveTime = Instant.now().toEpochMilli();
 		Payload payload;
 		try {
-            payload = mapper.readValue(message.getPayload(), Payload.class);
+			payload = mapper.readValue(message.getPayload(), Payload.class);
 			Record record = new Record(
 					payload.clientId,
 					clientId,
@@ -136,10 +136,10 @@ public class Subscriber implements Client, Runnable,MqttCallback {
 				StatusPingSender statusPingSender = (StatusPingSender) pingSender;
 				statusPingSender.updateProcessingTimePerMsg(Instant.now().toEpochMilli() - receiveTime);
 			}
-        } catch (Exception e) {
-            Benchmarker.logger.log(Level.SEVERE, "{0} received invalid payload {1}", new Object[]{clientId, message.getPayload()});
+		} catch (Exception e) {
+			Benchmarker.logger.log(Level.SEVERE, "{0} received invalid payload {1}", new Object[]{clientId, message.getPayload()});
 			return;
-        }
+		}
 	}
 
 	@Override

@@ -24,16 +24,16 @@ public class Record {
 	}
 
 	public boolean isLast() {
-        return isLast;
-    }
+		return isLast;
+	}
 
-	public static String toCsvHeader(){
-		String[] values = { "sentClientId", "receivedClientId", "messageId", "sentTime", "receivedTime", "latency" };
+	public static String toCsvHeader() {
+		String[] values = {"sentClientId", "receivedClientId", "messageId", "sentTime", "receivedTime", "latency"};
 		return String.join(",", values);
 	}
 
-	public String toCsvRow(){
-		String[] values = { sentClientId, receivedClientId, String.valueOf(messageId), String.valueOf(sentTime), String.valueOf(receivedTime), String.valueOf(latency) };
+	public String toCsvRow() {
+		String[] values = {sentClientId, receivedClientId, String.valueOf(messageId), String.valueOf(sentTime), String.valueOf(receivedTime), String.valueOf(latency)};
 		return String.join(",", values);
 	}
 

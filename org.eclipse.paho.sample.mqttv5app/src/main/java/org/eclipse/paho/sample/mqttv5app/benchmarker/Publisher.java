@@ -4,19 +4,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import org.eclipse.paho.mqttv5.client.IMqttToken;
-import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
-import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
+import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
 import java.time.Instant;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 
 
-public class Publisher implements Client, Runnable {
+public class Publisher implements Client, Runnable, MqttCallback {
 
 	private BenchmarkOptions opts;
 	private String clientId;
@@ -31,7 +30,7 @@ public class Publisher implements Client, Runnable {
 	private String messageData;
 	private volatile boolean isTerminate = false;
 
-	public Publisher(BenchmarkOptions opts, String clientId){
+	public Publisher(BenchmarkOptions opts, String clientId) {
 		this.opts = opts;
 		this.clientId = clientId;
 
@@ -40,9 +39,9 @@ public class Publisher implements Client, Runnable {
 		this.publishCount = 0;
 	}
 
-	public String getClientId(){
-        return clientId;
-    }
+	public String getClientId() {
+		return clientId;
+	}
 
 	public void start() throws MqttException {
 		// 接続
@@ -57,15 +56,15 @@ public class Publisher implements Client, Runnable {
 		if (publishInterval > 0) {
 			// 定期的にタスクが実行されるようにスケジューラを設定
 			Benchmarker.logger.log(Level.INFO, "{0} start publishing with interval {1} micro seconds", new Object[]{clientId, publishInterval});
-            future = service.scheduleAtFixedRate(this, 0, publishInterval, TimeUnit.MICROSECONDS);
-        } else {
+			future = service.scheduleAtFixedRate(this, 0, publishInterval, TimeUnit.MICROSECONDS);
+		} else {
 			// 一度だけタスクが実行されるようにスケジューラを設定
-			Benchmarker.logger.log(Level.INFO, "{0} start publishing without interval",  new Object[]{clientId});
-            future = service.schedule(this, 0, TimeUnit.SECONDS);
-        }
+			Benchmarker.logger.log(Level.INFO, "{0} start publishing without interval", new Object[]{clientId});
+			future = service.schedule(this, 0, TimeUnit.SECONDS);
+		}
 	}
 
-	public void stop() throws MqttException, InterruptedException{
+	public void stop() throws MqttException, InterruptedException {
 		// スレッド停止
 		if (!future.isDone()) {
 			isTerminate = true;
@@ -81,29 +80,29 @@ public class Publisher implements Client, Runnable {
 			client.disconnect();
 		}
 		Benchmarker.logger.log(Level.INFO, "{0} stop publishing", new Object[]{clientId});
-    }
-
-	public void run(){
-		if (publishInterval > 0) {
-			publishOnce();
-        } else {
-			publishConsecutively();
-        }
 	}
 
-	private void publishOnce(){
-		if (!isTerminate) {
-			 publish();
+	public void run() {
+		if (publishInterval > 0) {
+			publishOnce();
+		} else {
+			publishConsecutively();
 		}
 	}
 
-	private void publishConsecutively(){
-		while(!isTerminate){
+	private void publishOnce() {
+		if (!isTerminate) {
 			publish();
 		}
 	}
 
-	private void publish(){
+	private void publishConsecutively() {
+		while (!isTerminate) {
+			publish();
+		}
+	}
+
+	private void publish() {
 		Payload payload = createPayload();
 		try {
 			MqttMessage msg = new MqttMessage(mapper.writeValueAsBytes(payload));
@@ -115,28 +114,52 @@ public class Publisher implements Client, Runnable {
 			throw new RuntimeException(e);
 		}
 		publishCount++;
-    }
+	}
 
-	private Payload createPayload(){
+	private Payload createPayload() {
 		long now = Instant.now().toEpochMilli();
 		Payload payload = new Payload(clientId, publishCount, now);
 		setMessageData(payload);
 		return payload;
-    }
+	}
 
-	private void setMessageData(Payload payload){
+	private void setMessageData(Payload payload) {
 		if (messageData == null) {
-            try {
-                String json = mapper.writeValueAsString(payload);
+			try {
+				String json = mapper.writeValueAsString(payload);
 				if (opts.messageSize - json.length() < 0) {
 					messageData = "";
 				} else {
 					messageData = RandomStringUtils.randomAscii(opts.messageSize - json.length());
 				}
-            } catch (Exception e) {
-                Benchmarker.logger.log(Level.SEVERE, "Failed to create message data.", e);
-            }
-        }
+			} catch (Exception e) {
+				Benchmarker.logger.log(Level.SEVERE, "Failed to create message data.", e);
+			}
+		}
 		payload.data = messageData;
+	}
+
+	@Override
+	public void disconnected(MqttDisconnectResponse disconnectResponse) {
+	}
+
+	@Override
+	public void mqttErrorOccurred(MqttException exception) {
+	}
+
+	@Override
+	public void messageArrived(String topic, MqttMessage message) throws Exception {
+	}
+
+	@Override
+	public void deliveryComplete(IMqttToken token) {
+	}
+
+	@Override
+	public void connectComplete(boolean reconnect, String serverURI) {
+	}
+
+	@Override
+	public void authPacketArrived(int reasonCode, MqttProperties properties) {
 	}
 }

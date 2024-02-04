@@ -31,7 +31,8 @@ public class Benchmarker {
 		opts.setEnvVar();
 
 		// Generate a unique ID for benchmark
-		new Benchmarker(RandomStringUtils.randomAlphabetic(10), opts).run();
+		String randomId = RandomStringUtils.randomAlphabetic(10);
+		new Benchmarker(randomId, opts).run();
 	}
 
 	public Benchmarker(String randomId, BenchmarkOptions opts) {
@@ -49,10 +50,12 @@ public class Benchmarker {
 			return;
 		}
 		else if (opts.mode.equals("PUB")) {
+			// Create publishers
 			for (int i = 0; i < opts.numClients; i++) {
 				clients.add(new Publisher(opts, randomId + "-pub-"+ i));
 			}
 		}else if (opts.mode.equals("SUB")) {
+			// Create output directory
 			Path outputPath = Paths.get(opts.outputPath);
 			if (Files.notExists(outputPath)) {
 				try {
@@ -61,6 +64,8 @@ public class Benchmarker {
 					throw new RuntimeException(e);
 				}
 			}
+
+			// Create subscribers
 			for (int i = 0; i < opts.numClients; i++) {
 				try {
 					BufferedWriter bw = Files.newBufferedWriter(outputPath.resolve("sub-"+i+".csv"), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);

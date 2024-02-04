@@ -6,7 +6,7 @@ public class EnvVarFetcher {
 		return envVarValue != null ? envVarValue : defaultValue;
 	}
 
-	public  static int getEnvVarOrDefault(String envVarName, int defaultValue) {
+	public static int getEnvVarOrDefault(String envVarName, int defaultValue) {
 		String envVarValue = System.getenv(envVarName);
 		return envVarValue != null ? Integer.parseInt(envVarValue) : defaultValue;
 	}

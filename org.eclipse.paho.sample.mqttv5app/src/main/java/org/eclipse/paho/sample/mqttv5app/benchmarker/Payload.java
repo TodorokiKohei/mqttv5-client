@@ -22,7 +22,7 @@ public class Payload {
 			@JsonProperty("messageId") long messageId,
 			@JsonProperty("sendTime") long sendTime,
 			@JsonProperty("data") String data
-	){
+	) {
 		this.clientId = clientId;
 		this.messageId = messageId;
 		this.sendTime = sendTime;
@@ -30,6 +30,6 @@ public class Payload {
 	}
 
 	public Payload(String clientId, long messageId, long sendTime) {
-        this(clientId, messageId, sendTime, "");
+		this(clientId, messageId, sendTime, "");
 	}
 }
