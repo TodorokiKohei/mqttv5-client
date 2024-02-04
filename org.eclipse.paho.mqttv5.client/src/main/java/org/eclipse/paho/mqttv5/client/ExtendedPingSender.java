@@ -61,7 +61,7 @@ public abstract class ExtendedPingSender implements MqttPingSender {
 		final String methodName = "stop";
 
 		//@Trace 661=stop
-		log.info(CLASS_NAME, methodName, "661", null);
+		log.fine(CLASS_NAME, methodName, "661", null);
 		if (executorService == null) {
 			if (timer != null) {
 				timer.cancel();
@@ -90,7 +90,7 @@ public abstract class ExtendedPingSender implements MqttPingSender {
 		public void run() {
 			Thread.currentThread().setName("MQTT Ping: " + clientid);
 			//@Trace 660=Check schedule at {0}
-			log.info(CLASS_NAME, methodName, "660", new Object[]{Long.valueOf(System.nanoTime())});
+			log.fine(CLASS_NAME, methodName, "660", new Object[]{Long.valueOf(System.nanoTime())});
 
 			// Create PINGREQ before checkForActibity
 			MqttPingReq pingReq = createPingreq();
