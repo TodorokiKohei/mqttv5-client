@@ -46,7 +46,7 @@ public class StatusPingSender extends ExtendedPingSender {
 		try {
 			String jsonPayload = mapper.writeValueAsString(payload);
 			pingReq = new MqttPingReq(jsonPayload.getBytes());
-			log.info(CLASS_NAME, methodName, "Create PINGREQ payload: {0}.", new Object[]{jsonPayload});
+//			log.info(CLASS_NAME, methodName, "Create PINGREQ payload: {0}.", new Object[]{jsonPayload});
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}

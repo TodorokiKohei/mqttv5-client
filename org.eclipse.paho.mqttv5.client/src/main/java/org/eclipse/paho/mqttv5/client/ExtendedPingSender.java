@@ -16,7 +16,7 @@ import static java.lang.Math.min;
 
 public abstract class ExtendedPingSender implements MqttPingSender {
 	private static final String CLASS_NAME = ExtendedPingSender.class.getName();
-	protected Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
+	private Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
 
 	protected ClientComms comms;
 
