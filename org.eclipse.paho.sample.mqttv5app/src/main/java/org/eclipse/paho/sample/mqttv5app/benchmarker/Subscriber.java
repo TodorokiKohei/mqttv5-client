@@ -18,7 +18,10 @@ public class Subscriber implements Client, Runnable, MqttCallback {
 
 	private BenchmarkOptions opts;
 	private String clientId;
+	private String startTopic;
+	private CountDownLatch latch;
 	private BufferedWriter bw;
+
 	private ObjectMapper mapper;
 
 	private MqttAsyncClient client;
@@ -31,9 +34,15 @@ public class Subscriber implements Client, Runnable, MqttCallback {
 	private volatile boolean isTerminate = false;
 
 	public Subscriber(BenchmarkOptions opts, String clientId, BufferedWriter bw) {
+		this(opts, clientId, bw, "", null);
+	}
+
+	public Subscriber(BenchmarkOptions opts, String clientId, BufferedWriter bw, String startTopic, CountDownLatch latch) {
 		this.opts = opts;
 		this.clientId = clientId;
 		this.bw = bw;
+		this.startTopic = startTopic;
+		this.latch = latch;
 
 		this.mapper = new ObjectMapper();
 	}
@@ -46,10 +55,11 @@ public class Subscriber implements Client, Runnable, MqttCallback {
 		// 接続
 		MemoryPersistence persistence = new MemoryPersistence();
 		if (opts.enableExtendedPingSender) {
+			// ExtendedPingSenderを使用する場合は、clientの生成時にPingSenderを渡す
 			pingSender = new StatusPingSender();
 			pingSender.setPingIntervalMilliSeconds(1000);
 			client = new MqttAsyncClient(opts.brokerUrl, clientId, persistence, pingSender, null);
-			client.resizeReceiverQueueSize(1000);
+			client.resizeReceiverQueueSize(1000);        // デフォルトのキューサイズは10のため1000に拡張
 			Benchmarker.logger.log(Level.INFO, "{0} is using extended ping sender", new Object[]{clientId});
 		} else {
 			client = new MqttAsyncClient(opts.brokerUrl, clientId, persistence);
@@ -59,6 +69,11 @@ public class Subscriber implements Client, Runnable, MqttCallback {
 		connOpts.setKeepAliveInterval(60);
 		IMqttToken mt = client.connect(connOpts);
 		mt.waitForCompletion();
+
+		// startTopicが指定されている場合は、startTopicをsubscribe
+		if (!startTopic.equals("")) {
+			client.subscribe(startTopic, 0);
+		}
 
 		// スレッド起動
 		service = Executors.newSingleThreadScheduledExecutor();
@@ -118,6 +133,13 @@ public class Subscriber implements Client, Runnable, MqttCallback {
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
+		// startTopicを受信したらlatchをカウントダウン
+		if (topic.equals(startTopic)) {
+			latch.countDown();
+			return;
+		}
+
+		// メッセージ受信時刻を記録
 		if (isTerminate) return;
 		long receiveTime = Instant.now().toEpochMilli();
 		Payload payload;
@@ -138,7 +160,6 @@ public class Subscriber implements Client, Runnable, MqttCallback {
 			}
 		} catch (Exception e) {
 			Benchmarker.logger.log(Level.SEVERE, "{0} received invalid payload {1}", new Object[]{clientId, message.getPayload()});
-			return;
 		}
 	}
 

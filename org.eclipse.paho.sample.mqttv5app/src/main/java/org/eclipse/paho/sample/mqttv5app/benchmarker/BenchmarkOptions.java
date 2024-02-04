@@ -33,7 +33,7 @@ public class BenchmarkOptions {
 		brokerUrl = EnvVarFetcher.getEnvVarOrDefault("BROKER_URL", "tcp://localhost:1883");
 		topic = EnvVarFetcher.getEnvVarOrDefault("TOPIC", "test");
 		qos = EnvVarFetcher.getEnvVarOrDefault("QOS", 0);
-		startTopic = EnvVarFetcher.getEnvVarOrDefault("START_TOPIC", null);
+		startTopic = EnvVarFetcher.getEnvVarOrDefault("START_TOPIC", "");
 
 		messageSize = EnvVarFetcher.getEnvVarOrDefault("MESSAGE_SIZE", 100);
 		throughput = EnvVarFetcher.getEnvVarOrDefault("THROUGHPUT", 100);

@@ -19,6 +19,9 @@ public class Publisher implements Client, Runnable, MqttCallback {
 
 	private BenchmarkOptions opts;
 	private String clientId;
+	private String startTopic;
+	private CountDownLatch latch;
+
 	private ObjectMapper mapper;
 	private long publishInterval;
 	private long publishCount;
@@ -31,8 +34,14 @@ public class Publisher implements Client, Runnable, MqttCallback {
 	private volatile boolean isTerminate = false;
 
 	public Publisher(BenchmarkOptions opts, String clientId) {
+		this(opts, clientId, "", null);
+	}
+
+	public Publisher(BenchmarkOptions opts, String clientId, String startTopic, CountDownLatch latch) {
 		this.opts = opts;
 		this.clientId = clientId;
+		this.startTopic = startTopic;
+		this.latch = latch;
 
 		this.mapper = new ObjectMapper();
 		this.publishInterval = opts.getPublishInterval(TimeUnit.MICROSECONDS);
@@ -50,6 +59,13 @@ public class Publisher implements Client, Runnable, MqttCallback {
 		MqttConnectionOptions conOpts = new MqttConnectionOptions();
 		IMqttToken mt = client.connect(conOpts);
 		mt.waitForCompletion();
+
+		// startTopicが指定されている場合は、startTopicをsubscribe
+		if (!startTopic.equals("")) {
+            client.setCallback(this);
+            client.subscribe(startTopic, opts.qos);
+			isTerminate = true;		// publishを待機状態にする
+        }
 
 		// 送信レートの設定の有無でスケジューラの設定を変える
 		service = Executors.newSingleThreadScheduledExecutor();
@@ -149,6 +165,11 @@ public class Publisher implements Client, Runnable, MqttCallback {
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
+		// startTopicを受信したらlatchをカウントダウンしてpublishを開始
+		if (topic.equals(startTopic)) {
+			latch.countDown();
+			isTerminate = false;
+		}
 	}
 
 	@Override
