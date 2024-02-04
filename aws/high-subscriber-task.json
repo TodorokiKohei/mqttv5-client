@@ -1,0 +1,88 @@
+{
+    "family": "mqtt-high-subscriber",
+    "containerDefinitions": [
+        {
+            "name": "benchmarker",
+            "image": "924899176789.dkr.ecr.ap-northeast-1.amazonaws.com/benchmarker:latest",
+            "cpu": 0,
+            "portMappings": [],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "MODE",
+                    "value": "SUB"
+                },
+                {
+                    "name": "BROKER_URL",
+                    "value": "tcp://broker.iot-simulator"
+                },
+                {
+                    "name": "NUM_CLIENTS",
+                    "value": "1"
+                },
+                {
+                    "name": "OUTPUT_PATH",
+                    "value": "/app/results"
+                },
+                {
+                    "name": "QOS",
+                    "value": "0"
+                },
+                {
+                    "name": "EXECUTION_TIME",
+                    "value": "60"
+                },
+                {
+                    "name": "ENABLE_EXTENDED_PING_SENDER",
+                    "value": "true"
+                },
+                {
+                    "name": "TOPIC",
+                    "value": "$share/g/test"
+                }
+            ],
+            "environmentFiles": [],
+            "mountPoints": [
+                {
+                    "sourceVolume": "subscriber-volume",
+                    "containerPath": "/app/results",
+                    "readOnly": false
+                }
+            ],
+            "volumesFrom": [],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/mqtt-subscriber",
+                    "awslogs-region": "ap-northeast-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            }
+        }
+    ],
+    "executionRoleArn": "arn:aws:iam::924899176789:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "volumes": [
+        {
+            "name": "subscriber-volume",
+            "host": {
+                "sourcePath": "/tmp/results"
+            }
+        }
+    ],
+    "placementConstraints": [
+        {
+            "type": "memberOf",
+            "expression": "attribute:ecs.instance-type == c5.large"
+        }
+    ],
+    "cpu": "2048",
+    "memory": "3072",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    }
+}
