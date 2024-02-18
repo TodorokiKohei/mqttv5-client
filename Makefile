@@ -15,7 +15,7 @@ ECS_CLUSTER_NAME := IoTSimulator
 PUB_TASK_DEFINITION_ARN = $(shell aws ecs list-task-definitions --family-prefix "publisher" --status ACTIVE --query "taskDefinitionArns[-1]" --output text)
 HIGH_SUB_TASK_DEFINITION_ARN = $(shell aws ecs list-task-definitions --family-prefix "high-subscriber" --status ACTIVE --query "taskDefinitionArns[-1]" --output text)
 LOW_SUB_TASK_DEFINITION_ARN = $(shell aws ecs list-task-definitions --family-prefix "low-subscriber" --status ACTIVE --query "taskDefinitionArns[-1]" --output text)
-PUB_COUNT := 3
+PUB_COUNT := 5
 SUB_COUNT := 2
 
 
@@ -66,17 +66,21 @@ start-tasks:
 		--network-configuration "awsvpcConfiguration={subnets=${SUBNET_ID},securityGroups=${SECURITY_GROUP_ID},assignPublicIp=ENABLED}" \
 		--count ${PUB_COUNT} \
 		--overrides "file://aws/publisher-overrides.json" \
-		--launch-type FARGATE --no-cli-pager
+		--launch-type FARGATE --no-cli-pager | \
+		jq -r '.tasks[].taskArn' > /tmp/task_arn.txt
 	aws ecs run-task --cluster ${ECS_CLUSTER_NAME} --task-definition ${HIGH_SUB_TASK_DEFINITION_ARN} \
     		--network-configuration "awsvpcConfiguration={subnets=${SUBNET_ID},securityGroups=${SECURITY_GROUP_ID}}" \
     		--count $$((${SUB_COUNT}/2)) \
     		--overrides "file://aws/high-subscriber-overrides.json" \
-    		--launch-type EC2 --no-cli-pager
+    		--launch-type EC2 --no-cli-pager | \
+			jq -r '.tasks[].taskArn' >> /tmp/task_arn.txt
 	aws ecs run-task --cluster ${ECS_CLUSTER_NAME} --task-definition ${LOW_SUB_TASK_DEFINITION_ARN} \
     		--network-configuration "awsvpcConfiguration={subnets=${SUBNET_ID},securityGroups=${SECURITY_GROUP_ID}}" \
     		--count $$((${SUB_COUNT}/2)) \
     		--overrides "file://aws/low-subscriber-overrides.json" \
-    		--launch-type EC2 --no-cli-pager
+    		--launch-type EC2 --no-cli-pager | \
+			jq -r '.tasks[].taskArn' >> /tmp/task_arn.txt
+	cat /tmp/task_arn.txt
 
 get-task-results:
 	$(eval TIMESTAMP := $(shell date "+%Y%m%d_%H%M%S"))
@@ -86,7 +90,8 @@ get-task-results:
 		--output text | \
 	while read ip name ; do \
 	 	echo "IP: $$ip, Name: $$name" ; \
-		mkdir -p ${OUTPUT_DIR}/${TIMESTAMP}/$$name; \
-	 	scp -i ${SSH_KEY} -o StrictHostKeyChecking=no -r ${SSH_USER}@$$ip:/tmp/results/*.csv ${OUTPUT_DIR}/${TIMESTAMP}/$$name ; \
-	 	ssh ${SSH_USER}@$$ip "sudo rm -rf /tmp/results/*.csv"; \
+		mkdir -p ${OUTPUT_DIR}/${TIMESTAMP}/$$name && \
+	 	scp -i ${SSH_KEY} -o StrictHostKeyChecking=no -r ${SSH_USER}@$$ip:/tmp/results/*.csv ${OUTPUT_DIR}/${TIMESTAMP}/$$name && \
+	 	ssh -i ${SSH_KEY} -n ${SSH_USER}@$$ip "sudo rm -rf /tmp/results/*.csv" ; \
 	done
+
