@@ -1,0 +1,17 @@
+{
+  "containerOverrides": [
+    {
+      "name": "benchmarker",
+      "environment": [
+        {
+          "name": "MODE",
+          "value": "SUB"
+        },
+        {
+          "name": "EXECUTION_TIME",
+          "value": "15"
+        }
+      ]
+    }
+  ]
+}

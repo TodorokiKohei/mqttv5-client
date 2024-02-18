@@ -1,5 +1,5 @@
 {
-    "family": "mqtt-publisher",
+    "family": "publisher",
     "containerDefinitions": [
         {
             "name": "benchmarker",
@@ -44,6 +44,10 @@
                 {
                     "name": "TOPIC",
                     "value": "test"
+                },
+                {
+                    "name": "START_TOPIC",
+                    "value": "start"
                 }
             ],
             "environmentFiles": [],

@@ -1,5 +1,5 @@
 {
-    "family": "mqtt-low-subscriber",
+    "family": "low-subscriber",
     "containerDefinitions": [
         {
             "name": "benchmarker",
@@ -39,6 +39,14 @@
                 {
                     "name": "TOPIC",
                     "value": "$share/g/test"
+                },
+                {
+                    "name": "START_TOPIC",
+                    "value": "start"
+                },
+                {
+                    "name": "SUB_LABEL",
+                    "value": "low"
                 }
             ],
             "environmentFiles": [],
