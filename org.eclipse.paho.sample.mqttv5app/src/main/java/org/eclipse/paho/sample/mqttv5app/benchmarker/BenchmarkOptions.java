@@ -23,6 +23,7 @@ public class BenchmarkOptions {
 	// サブスクライバー用オプション
 	public boolean enableExtendedPingSender;
 	public String outputPath;
+	public String subLabel;
 
 	public void setEnvVar() {
 		logLevel = EnvVarFetcher.getEnvVarOrDefault("LOG_LEVEL", "INFO");
@@ -41,6 +42,7 @@ public class BenchmarkOptions {
 
 		enableExtendedPingSender = EnvVarFetcher.getEnvVarOrDefault("ENABLE_EXTENDED_PING_SENDER", false);
 		outputPath = EnvVarFetcher.getEnvVarOrDefault("OUTPUT_PATH", "results");
+		subLabel = EnvVarFetcher.getEnvVarOrDefault("SUB_LABEL", "");
 	}
 
 	public long getPublishInterval(TimeUnit timeUnit) {

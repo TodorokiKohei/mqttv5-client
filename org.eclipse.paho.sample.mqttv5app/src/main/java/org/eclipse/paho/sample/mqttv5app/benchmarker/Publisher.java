@@ -113,6 +113,13 @@ public class Publisher implements Client, Runnable, MqttCallback {
 	}
 
 	private void publishConsecutively() {
+		while (isTerminate) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
 		while (!isTerminate) {
 			publish();
 		}
@@ -169,6 +176,7 @@ public class Publisher implements Client, Runnable, MqttCallback {
 		if (topic.equals(startTopic)) {
 			latch.countDown();
 			isTerminate = false;
+			Benchmarker.logger.log(Level.INFO, "{0} start publishing", new Object[]{clientId});
 		}
 	}
 

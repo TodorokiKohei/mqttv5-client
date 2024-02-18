@@ -79,10 +79,10 @@ public class Benchmarker {
 					writers.add(bw);
 					if (opts.startTopic.equals("")) {
 						// Create subscribers without start topic. They will be started immediately
-						clients.add(new Subscriber(opts, randomId + "-sub-" + i, bw));
+						clients.add(new Subscriber(opts, randomId + "-" + opts.subLabel + "-sub-" + i, bw));
 						latch.countDown();
 					} else {
-						clients.add(new Subscriber(opts, randomId + "-sub-" + i, bw, opts.startTopic, latch));
+						clients.add(new Subscriber(opts, randomId + "-" + opts.subLabel + "-sub-" + i, bw, opts.startTopic, latch));
 					}
 				} catch (IOException e) {
 					throw new RuntimeException(e);
