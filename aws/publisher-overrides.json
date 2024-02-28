@@ -9,7 +9,15 @@
         },
         {
           "name": "EXECUTION_TIME",
-          "value": "15"
+          "value": "30"
+        },
+        {
+          "name": "NUM_CLIENTS",
+          "value": "100"
+        },
+        {
+          "name": "THROUGHPUT",
+          "value": "3"
         }
       ]
     }

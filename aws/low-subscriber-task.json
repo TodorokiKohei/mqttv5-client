@@ -84,11 +84,11 @@
     "placementConstraints": [
         {
             "type": "memberOf",
-            "expression": "attribute:ecs.instance-type == t2.medium"
+            "expression": "attribute:ecs.instance-type == t2.small"
         }
     ],
-    "cpu": "2048",
-    "memory": "3072",
+    "cpu": "1024",
+    "memory": "1024",
     "runtimePlatform": {
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"

@@ -75,6 +75,14 @@ public class Subscriber implements Client, Runnable, MqttCallback {
 			client.subscribe(startTopic, 0);
 		}
 
+		// 最初の変換が遅いため，ダミーで一度変換を行う
+		try {
+			Payload payload = new Payload(clientId, 0, 0);
+			mapper.readValue(mapper.writeValueAsBytes(payload), Payload.class);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
 		// スレッド起動
 		service = Executors.newSingleThreadScheduledExecutor();
 		future = service.schedule(this, 0, TimeUnit.SECONDS);

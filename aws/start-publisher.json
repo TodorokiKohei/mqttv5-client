@@ -1,0 +1,39 @@
+{
+  "family": "start-publisher",
+  "containerDefinitions": [
+    {
+      "name": "eclipse-mosquitto",
+      "image": "eclipse-mosquitto",
+      "cpu": 0,
+      "portMappings": [],
+      "essential": true,
+      "entryPoint": [
+        "mosquitto_pub"
+      ],
+      "command": [
+        "-h",
+        "broker.iot-simulator",
+        "-t",
+        "start",
+        "-m",
+        "hello"
+      ],
+      "environment": [],
+      "environmentFiles": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "ulimits": []
+    }
+  ],
+  "executionRoleArn": "arn:aws:iam::924899176789:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  }
+}

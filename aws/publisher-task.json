@@ -52,17 +52,7 @@
             ],
             "environmentFiles": [],
             "volumesFrom": [],
-            "ulimits": [],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-create-group": "true",
-                    "awslogs-group": "/ecs/mqtt-publisher",
-                    "awslogs-region": "ap-northeast-1",
-                    "awslogs-stream-prefix": "ecs"
-                },
-                "secretOptions": []
-            }
+            "ulimits": []
         }
     ],
     "executionRoleArn": "arn:aws:iam::924899176789:role/ecsTaskExecutionRole",
@@ -70,8 +60,8 @@
     "requiresCompatibilities": [
         "FARGATE"
     ],
-    "cpu": "2048",
-    "memory": "4096",
+    "cpu": "4096",
+    "memory": "8192",
     "runtimePlatform": {
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
