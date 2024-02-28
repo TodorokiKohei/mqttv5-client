@@ -96,11 +96,11 @@ start-tasks:
 				--launch-type FARGATE --no-cli-pager > /tmp/run_task.json ; \
 		cat /tmp/run_task.json | jq -r '.tasks[].taskArn' >> /tmp/task_arn.txt ; \
 		cat /tmp/run_task.json | jq -r '.failures | length' >> /tmp/failure_task.txt ; \
-		@while true ; do \
+		while true ; do \
 			aws ecs describe-tasks --cluster ${ECS_CLUSTER_NAME} --tasks $$(cat /tmp/task_arn.txt | tr "\n" " ") --query "tasks[*].[lastStatus]" --output text --no-cli-pager | \
 			grep -qv "RUNNING" || break ; \
 			sleep 10 ; \
-		done
+		done ; \
 	fi
 	@echo "Failed tasks: $$(cat /tmp/failure_task.txt | awk '{s+=$$1} END {print s}')"
 
@@ -156,6 +156,7 @@ add-missing-tasks:
 		cat /tmp/run_task.json | jq -r '.tasks[].taskArn' >> /tmp/task_arn.txt ; \
 		cat /tmp/run_task.json | jq -r '.failures | length' >> /tmp/failure_task.txt ; \
 	fi
+	@echo "Waiting for tasks to be running..."
 	@while true ; do \
 		aws ecs describe-tasks --cluster ${ECS_CLUSTER_NAME} --tasks $$(cat /tmp/task_arn.txt | tr "\n" " ") --query "tasks[*].[lastStatus]" --output text --no-cli-pager | \
 		grep -qv "RUNNING" || break ; \
