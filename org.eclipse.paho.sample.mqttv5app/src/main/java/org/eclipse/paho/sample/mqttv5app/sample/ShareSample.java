@@ -1,4 +1,4 @@
-package org.eclipse.paho.sample.mqttv5app;
+package org.eclipse.paho.sample.mqttv5app.sample;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;

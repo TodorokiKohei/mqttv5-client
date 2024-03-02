@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  # 必ずブローカをビルドしてから実行する
+  broker:
+    image: sharedsub:latest
+    volumes:
+      - type: bind
+        source: ./results
+        target: /app/results
+    command: ["-algo", "score"]
+
+  subs:
+    image: benchmarker:latest
+    environment:
+      - MODE=SUB
+      - NUM_CLIENTS=3
+      - EXECUTION_TIME=20
+      - BROKER_URL=tcp://broker:1883
+      - TOPIC=$$share/g/test
+      - QOS=0
+      - ENABLE_EXTENDED_PING_SENDER=true
+      - OUTPUT_PATH=/app/results
+    volumes:
+      - type: bind
+        source: ./results
+        target: /app/results
+    depends_on:
+      - broker
+
+  pubs:
+    image: benchmarker:latest
+    environment:
+      - MODE=PUB
+      - NUM_CLIENTS=1
+      - EXECUTION_TIME=15
+      - BROKER_URL=tcp://broker:1883
+      - TOPIC=test
+      - QOS=0
+      - MESSAGE_SIZE=100
+      - THROUGHPUT=100
+      - UNIT=msg/s
+    depends_on:
+      - broker

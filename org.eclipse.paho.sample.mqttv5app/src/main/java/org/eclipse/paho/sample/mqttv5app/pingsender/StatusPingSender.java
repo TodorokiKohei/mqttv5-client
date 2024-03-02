@@ -12,8 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class StatusPingSender extends ExtendedPingSender {
 	private static final String CLASS_NAME = StatusPingSender.class.getName();
 
-	private int messageCount;
-	private double totalProcessingTime;
+	private volatile int messageCount;
+	private volatile double totalProcessingTime;
 
 	private ObjectMapper mapper;
 
@@ -26,8 +26,10 @@ public class StatusPingSender extends ExtendedPingSender {
 	public void updateProcessingTimePerMsg(double processingTime){
 		final String methodName = "updateProcessingTimePerMsg";
 
-		messageCount++;
-		totalProcessingTime += processingTime;
+		synchronized (this) {
+			messageCount++;
+			totalProcessingTime += processingTime;
+		}
 	}
 
 	@Override
@@ -44,12 +46,14 @@ public class StatusPingSender extends ExtendedPingSender {
 		try {
 			String jsonPayload = mapper.writeValueAsString(payload);
 			pingReq = new MqttPingReq(jsonPayload.getBytes());
-			log.info(CLASS_NAME, methodName, "Create PINGREQ payload: {0}.", new Object[]{jsonPayload});
+//			log.info(CLASS_NAME, methodName, "Create PINGREQ payload: {0}.", new Object[]{jsonPayload});
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
-		messageCount = 0;
-		totalProcessingTime = 0;
+		synchronized (this) {
+			messageCount = 0;
+			totalProcessingTime = 0;
+		}
 		return pingReq;
 	}
 

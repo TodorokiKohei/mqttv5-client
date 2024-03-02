@@ -1,0 +1,25 @@
+{
+  "containerOverrides": [
+    {
+      "name": "benchmarker",
+      "environment": [
+        {
+          "name": "MODE",
+          "value": "PUB"
+        },
+        {
+          "name": "EXECUTION_TIME",
+          "value": "30"
+        },
+        {
+          "name": "NUM_CLIENTS",
+          "value": "100"
+        },
+        {
+          "name": "THROUGHPUT",
+          "value": "3"
+        }
+      ]
+    }
+  ]
+}

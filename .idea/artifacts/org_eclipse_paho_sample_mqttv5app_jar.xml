@@ -1,16 +1,17 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="org.eclipse.paho.sample.mqttv5app:jar">
-    <output-path>$PROJECT_DIR$/product</output-path>
+    <output-path>$PROJECT_DIR$/org.eclipse.paho.sample.mqttv5app/target</output-path>
     <root id="archive" name="org.eclipse.paho.sample.mqttv5app.jar">
       <element id="directory" name="META-INF">
         <element id="file-copy" path="$PROJECT_DIR$/org.eclipse.paho.sample.mqttv5app/META-INF/MANIFEST.MF" />
       </element>
       <element id="module-output" name="org.eclipse.paho.sample.mqttv5app" />
       <element id="module-output" name="org.eclipse.paho.mqttv5.client" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/commons-cli/commons-cli/1.5.0/commons-cli-1.5.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.14.0/commons-lang3-3.14.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.13.3/jackson-databind-2.13.3.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-annotations/2.13.3/jackson-annotations-2.13.3.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-core/2.13.3/jackson-core-2.13.3.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/commons-cli/commons-cli/1.5.0/commons-cli-1.5.0.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>
